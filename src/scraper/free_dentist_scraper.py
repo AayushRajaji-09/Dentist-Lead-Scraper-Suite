@@ -1,3 +1,4 @@
+import os
 import re
 import time
 import pandas as pd
@@ -53,7 +54,10 @@ def scrape_complete_directory():
     seen_urls = set()
     seen_phones = set()
     
-    output_filename = f"Dentists_{CITY_NAME}_Complete_Directory.xlsx"
+    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+    out_dir = os.path.join(root_dir, 'output')
+    os.makedirs(out_dir, exist_ok=True)
+    output_filename = os.path.join(out_dir, f"Dentists_{CITY_NAME}_Complete_Directory.xlsx")
     print(f"\n🚀 Starting Multi-Area Deep Scraper across {len(AREAS)} areas of {CITY_NAME}!")
     print("---------------------------------------------------------")
 

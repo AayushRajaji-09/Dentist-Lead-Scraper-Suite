@@ -7,12 +7,18 @@ import tkinter as tk
 from tkinter import messagebox, scrolledtext, ttk
 import pandas as pd
 from playwright.sync_api import sync_playwright
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 try:
-    from run_logger import log_run
+    from src.utils.run_logger import log_run
 except ImportError:
-    def log_run(*args, **kwargs):
-        pass
+    try:
+        from run_logger import log_run
+    except ImportError:
+        def log_run(*args, **kwargs):
+            pass
 
 # =========================================================
 # TOP COMMERCIAL AREAS FOR INDIAN CITIES (AUTO-DISCOVERY)
@@ -186,7 +192,10 @@ class ScraperApp:
         self.stop_btn.config(state=tk.DISABLED)
 
     def open_folder(self):
-        os.startfile(os.getcwd())
+        root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+        out_dir = os.path.join(root_dir, 'output')
+        os.makedirs(out_dir, exist_ok=True)
+        os.startfile(out_dir)
 
     def run_scraper(self):
         city = self.city_var.get().strip().title()
@@ -195,7 +204,10 @@ class ScraperApp:
         headless = self.headless_var.get()
 
         areas = get_areas_for_city(city)[:areas_limit]
-        output_file = f"Dentists_{city}_Profiled_Directory.xlsx"
+        root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+        out_dir = os.path.join(root_dir, 'output')
+        os.makedirs(out_dir, exist_ok=True)
+        output_file = os.path.join(out_dir, f"Dentists_{city}_Profiled_Directory.xlsx")
 
         self.log(f"🚀 Initializing Lead Scraper for City: '{city}' across {len(areas)} areas.")
         self.log(f"📋 Areas targeted: {', '.join(areas)}")

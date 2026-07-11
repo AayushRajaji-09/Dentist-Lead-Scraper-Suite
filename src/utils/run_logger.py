@@ -4,8 +4,12 @@ import os
 import subprocess
 from datetime import datetime
 
-LOG_JSON = "run_history.json"
-LOG_CSV = "run_log.csv"
+ROOT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
+OUTPUT_DIR = os.path.join(ROOT_DIR, 'output')
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+LOG_JSON = os.path.join(OUTPUT_DIR, "run_history.json")
+LOG_CSV = os.path.join(OUTPUT_DIR, "run_log.csv")
 
 
 def log_run(city_name, areas_count, leads_count, output_filename, status="Success"):

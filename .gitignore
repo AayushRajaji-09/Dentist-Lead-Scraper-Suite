@@ -1,34 +1,26 @@
-# Ignore all files/folders in the root by default
-/*
+# Virtual environments & Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+*.env
+*.env.*
 
-# Allow tracking of only the extension folder, README, and .gitignore
-!.gitignore
-!README.md
-!zen-code-ambience/
-!zen-ambiator.ps1
-!zen-ambiator.zsh
-!zen-ambiator-macos.command
-!zen-ambiator-macos.app/
-!vscode-extension/
-!docs/chrome/
-!docs/vscode/
-!docs/macos/
-!docs/index.html
-!docs/manifest.json
-!docs/sw.js
-!docs/icons/
-!INSTALL.md
+# IDE & Editor folders
+.vscode/
+.idea/
+*.swp
+*.swo
 
-# Dentist Lead Scraper Suite files
-!free_dentist_scraper.py
-!dentist_lead_suite_gui.py
-!run_logger.py
-!run_history.json
-!run_log.csv
-!HOW_TO_USE.md
-!requirements.txt
+# Output & Scraped Data
+output/*.xlsx
+output/*.csv
+output/*.json
+*.xlsx
 
-# Local environment files (do NOT commit your real keys)
-.env
-.env.local
-.env.*.local
+# Logs
+*.log
+run_history.json
+run_log.csv
