@@ -123,26 +123,29 @@ class ScraperApp:
         ttk.Label(header_frame, text="Extract First/Last Names, Mobile Numbers, Ratings, Reviews, Website & Ad Status seamlessly.", foreground="#475569").pack(anchor=tk.W, pady=(3, 0))
 
         # Control Panel
-        control_frame = ttk.LabelFrame(self.root, text=" ⚙️ Scraper Settings ", padding=15)
-        control_frame.pack(fill=tk.X, padx=15, pady=10)
+        control_outer = ttk.LabelFrame(self.root, text=" ⚙️ Scraper Settings ", padding=15)
+        control_outer.pack(fill=tk.X, padx=15, pady=10)
+        
+        control_frame = tk.Frame(control_outer)
+        control_frame.pack(fill=tk.BOTH, expand=True)
 
         # City Input
-        ttk.Label(control_frame, text="Target City Name:").grid(row=0, column=0, sticky=tk.W, pady=5)
+        ttk.Label(control_frame, text="Target City Name:").grid(row=0, column=0, sticky=tk.W, pady=8)
         self.city_var = tk.StringVar(value="Mumbai")
-        self.city_entry = ttk.Entry(control_frame, textvariable=self.city_var, width=28, font=("Segoe UI", 10))
-        self.city_entry.grid(row=0, column=1, sticky=tk.W, padx=10, pady=5)
+        self.city_entry = ttk.Entry(control_frame, textvariable=self.city_var, width=36, font=("Segoe UI", 12))
+        self.city_entry.grid(row=0, column=1, sticky=tk.W, padx=10, pady=8, ipady=3)
 
         # Areas Limit
-        ttk.Label(control_frame, text="Areas to Scrape:").grid(row=0, column=2, sticky=tk.W, padx=(15, 5), pady=5)
+        ttk.Label(control_frame, text="Areas to Scrape:").grid(row=0, column=2, sticky=tk.W, padx=(15, 5), pady=8)
         self.areas_var = tk.IntVar(value=6)
-        self.areas_spin = ttk.Spinbox(control_frame, from_=1, to=20, textvariable=self.areas_var, width=8)
-        self.areas_spin.grid(row=0, column=3, sticky=tk.W, pady=5)
+        self.areas_spin = ttk.Spinbox(control_frame, from_=1, to=20, textvariable=self.areas_var, width=10, font=("Segoe UI", 12))
+        self.areas_spin.grid(row=0, column=3, sticky=tk.W, pady=8, ipady=3)
 
         # Scroll Depth
-        ttk.Label(control_frame, text="Scroll Depth (Pages):").grid(row=1, column=0, sticky=tk.W, pady=5)
+        ttk.Label(control_frame, text="Scroll Depth (Pages):").grid(row=1, column=0, sticky=tk.W, pady=8)
         self.scroll_var = tk.IntVar(value=10)
-        self.scroll_spin = ttk.Spinbox(control_frame, from_=3, to=40, textvariable=self.scroll_var, width=8)
-        self.scroll_spin.grid(row=1, column=1, sticky=tk.W, padx=10, pady=5)
+        self.scroll_spin = ttk.Spinbox(control_frame, from_=3, to=40, textvariable=self.scroll_var, width=10, font=("Segoe UI", 12))
+        self.scroll_spin.grid(row=1, column=1, sticky=tk.W, padx=10, pady=8, ipady=3)
 
         # Checkboxes
         self.headless_var = tk.BooleanVar(value=False)
@@ -161,8 +164,11 @@ class ScraperApp:
         self.open_folder_btn.pack(side=tk.RIGHT)
 
         # Log Terminal
-        log_frame = ttk.LabelFrame(self.root, text=" 🖥️ Live Activity Log & Profiling Console ", padding=10)
-        log_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=(0, 15))
+        log_outer = ttk.LabelFrame(self.root, text=" 🖥️ Live Activity Log & Profiling Console ", padding=10)
+        log_outer.pack(fill=tk.BOTH, expand=True, padx=15, pady=(0, 15))
+        
+        log_frame = tk.Frame(log_outer)
+        log_frame.pack(fill=tk.BOTH, expand=True)
 
         self.console = scrolledtext.ScrolledText(log_frame, wrap=tk.WORD, font=("Consolas", 9), background="#0f172a", foreground="#38bdf8", state=tk.DISABLED)
         self.console.pack(fill=tk.BOTH, expand=True)
@@ -198,10 +204,27 @@ class ScraperApp:
         os.startfile(out_dir)
 
     def run_scraper(self):
-        city = self.city_var.get().strip().title()
-        areas_limit = self.areas_var.get()
-        scroll_depth = self.scroll_var.get()
-        headless = self.headless_var.get()
+        try:
+            city = self.city_var.get().strip().title()
+        except tk.TclError:
+            city = "Mumbai"
+        if not city:
+            city = "Mumbai"
+            
+        try:
+            areas_limit = int(self.areas_spin.get())
+        except (ValueError, tk.TclError):
+            areas_limit = 6
+            
+        try:
+            scroll_depth = int(self.scroll_spin.get())
+        except (ValueError, tk.TclError):
+            scroll_depth = 10
+            
+        try:
+            headless = self.headless_var.get()
+        except tk.TclError:
+            headless = False
 
         areas = get_areas_for_city(city)[:areas_limit]
         root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -337,18 +360,20 @@ class ScraperApp:
         except Exception as e:
             self.log(f"\n❌ Error during execution: {e}")
 
-        if results:
-            self.log(f"\n🎉 SCRAPING COMPLETE! Total unique profiled leads saved: {len(results)}")
-            self.log(f"📁 Output File: {os.path.abspath(output_file)}")
-            # Log run telemetry
-            log_run(city, len(areas), len(results), output_file, status="Success")
-        else:
-            self.log("\n⚠️ Scraper finished with 0 results recorded.")
+        finally:
+            if 'results' in locals() and results:
+                self.log(f"\n🎉 SCRAPING COMPLETE! Total unique profiled leads saved: {len(results)}")
+                self.log(f"📁 Output File: {os.path.abspath(output_file)}")
+                # Log run telemetry
+                log_run(city, len(areas), len(results), output_file, status="Success")
+                # Showing message box safely
+                self.root.after(0, lambda: messagebox.showinfo("Scraping Complete", f"Successfully extracted {len(results)} profiled dentist leads for {city}!\n\nSaved to: {output_file}"))
+            elif 'results' in locals():
+                self.log("\n⚠️ Scraper finished with 0 results recorded.")
 
-        self.is_running = False
-        self.start_btn.config(state=tk.NORMAL)
-        self.stop_btn.config(state=tk.DISABLED)
-        messagebox.showinfo("Scraping Complete", f"Successfully extracted {len(results)} profiled dentist leads for {city}!\n\nSaved to: {output_file}")
+            self.is_running = False
+            self.root.after(0, lambda: self.start_btn.config(state=tk.NORMAL))
+            self.root.after(0, lambda: self.stop_btn.config(state=tk.DISABLED))
 
 
 def main():
