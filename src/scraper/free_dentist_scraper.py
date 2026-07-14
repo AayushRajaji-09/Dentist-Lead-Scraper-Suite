@@ -165,5 +165,9 @@ def scrape_complete_directory():
     print("=========================================================\n")
 
 
-if __name__ == "__main__":
+def main():
     scrape_complete_directory()
+
+
+if __name__ == "__main__":
+    main()

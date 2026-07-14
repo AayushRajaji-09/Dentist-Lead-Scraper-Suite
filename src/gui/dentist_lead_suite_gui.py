@@ -351,7 +351,11 @@ class ScraperApp:
         messagebox.showinfo("Scraping Complete", f"Successfully extracted {len(results)} profiled dentist leads for {city}!\n\nSaved to: {output_file}")
 
 
-if __name__ == "__main__":
+def main():
     root = tk.Tk()
     app = ScraperApp(root)
     root.mainloop()
+
+
+if __name__ == "__main__":
+    main()
