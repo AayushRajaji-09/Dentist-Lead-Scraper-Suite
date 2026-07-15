@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """
-🚀 Antigravity Dentist Lead Scraper Suite v2.0 - Master Launcher
-Executes either the interactive GUI suite or the standalone CLI scraper.
+🚀 Antigravity Lead Scraper Suite v3.0 - Master Launcher
+Multi-category Google Maps lead scraper.
+  GUI  : python main.py
+  CLI  : python main.py --cli
 """
 import sys
 import os
@@ -11,12 +13,12 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 def main():
     if "--cli" in sys.argv or "--scraper" in sys.argv:
-        print("Launching Headless CLI Dentist Scraper Engine...")
+        print("🖥️  Launching Headless CLI Scraper Engine (v3.0)...")
         from src.scraper.free_dentist_scraper import main as scraper_main
         if callable(scraper_main):
             scraper_main()
     else:
-        print("Launching Interactive GUI Suite...")
+        print("🚀 Launching Antigravity Lead Scraper Suite v3.0 GUI...")
         from src.gui.dentist_lead_suite_gui import main as gui_main
         if callable(gui_main):
             gui_main()

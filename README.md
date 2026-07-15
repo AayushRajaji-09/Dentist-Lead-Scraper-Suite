@@ -1,50 +1,62 @@
-# 🚀 Antigravity Dentist Lead Scraper Suite v2.0
+# 🚀 Antigravity Lead Scraper Suite v3.0 — Matrix Edition
 
-An automated, customizable B2B lead generation and profiling suite across 10+ major Indian cities (`Ahmedabad`, `Mumbai`, `Surat`, `Pune`, `Bangalore`, `Delhi`, `Hyderabad`, `Kolkata`, `Chennai`, `Jaipur`). Equipped with an interactive GUI (`tkinter`), deep Google Maps extraction (`Ratings`, `Reviews`, `Ad Status`, `Website` checks), auto-discovery vectors, and automated Git telemetry.
+A multi-category, automated B2B lead generation and profiling suite covering **30 major Indian cities × 20 commercial areas each**. Features a stunning **Matrix-aesthetic GUI** with falling Katakana rain, real-time color-coded console, and an interactive City & Area picker dialog.
+
+Supports 4 business categories: **Dentists · Real Estate Agents · Salons · CA / Accountants**
 
 ---
 
-## 📁 Repository Organization & Functionality
+## 📁 Repository Structure
 
 ```
 Dentist-Lead-Scraper-Suite/
-  ├── main.py                          ← Master entry point launcher (CLI or GUI)
+  ├── main.py                              ← Master launcher (GUI or CLI)
   ├── src/
   │    ├── gui/
-  │    │    └── dentist_lead_suite_gui.py     ← Tkinter Interactive Dashboard
+  │    │    └── dentist_lead_suite_gui.py  ← Matrix UI (Tkinter) — main interface
   │    ├── scraper/
-  │    │    └── free_dentist_scraper.py       ← Headless Playwright Scraper Engine
+  │    │    ├── categories.py             ← [NEW v3.0] Category config (4 categories)
+  │    │    └── free_dentist_scraper.py   ← Headless CLI scraper engine
   │    └── utils/
-  │         └── run_logger.py                 ← Git Telemetry & Metrics Logger
+  │         └── run_logger.py             ← Git telemetry & metrics logger
   ├── docs/
-  │    └── HOW_TO_USE.md                      ← Complete User Manual & Agency Strategy
-  ├── output/                          ← Directory for exported .xlsx and log files
+  │    └── HOW_TO_USE.md                  ← Full user manual
+  ├── output/                             ← Exported .xlsx lead files go here
   ├── requirements.txt
   └── README.md
 ```
-
-### Module Breakdown
-- **`src/gui/dentist_lead_suite_gui.py`**: Interactive graphical interface featuring real-time log box, progress bars, scroll-depth tuning, and one-click output directory navigation.
-- **`src/scraper/free_dentist_scraper.py`**: Standalone multi-area headless Playwright scraper targeting Google Maps directly. Parses doctor `First Name` & `Surname` (`split_name_and_surname`), checks `Running Ads (Sponsored)?` badges, and identifies `No Website` prospects.
-- **`src/utils/run_logger.py`**: Automated telemetry tracking (`output/run_history.json`, `output/run_log.csv`) recording metrics and timestamps.
-- **`docs/HOW_TO_USE.md`**: Comprehensive user manual, Excel column definitions, and ad agency outreach guides.
 
 ---
 
 ## 🟢 Quickstart
 
-1. Install dependencies:
-   ```powershell
-   pip install -r requirements.txt
-   playwright install chromium
-   ```
-2. Launch the Interactive GUI Suite:
-   ```powershell
-   python main.py
-   ```
-   Or run the CLI Scraper:
-   ```powershell
-   python main.py --cli
-   ```
+```powershell
+# 1. Install dependencies
+pip install -r requirements.txt
+playwright install chromium
 
-*(For detailed column definitions, strategic agency pitching tips, and troubleshooting, read **[`docs/HOW_TO_USE.md`](docs/HOW_TO_USE.md)**.)*
+# 2. Launch the Matrix GUI
+python main.py
+
+# 3. Or run the headless CLI scraper
+python main.py --cli
+```
+
+---
+
+## ✨ v3.0 — What's New
+
+| Feature | Details |
+|---|---|
+| 🏙️ **30 Cities × 20 Areas** | Expanded from 10 cities to full 30-city India coverage |
+| 📍 **City & Area Picker Dialog** | Click to open — dropdown + checkboxes + custom area entry |
+| 🗂️ **4 Scraping Categories** | Dentists, Real Estate Agents, Salons, CA/Accountants |
+| 🌧️ **Matrix Rain UI** | Falling Katakana animation on the header canvas |
+| 🎨 **Full Dark Theme** | Black `#000000` bg, Matrix green `#00FF41` throughout |
+| 🖥️ **Color-coded Console** | 6 log tags: success / bright / warning / error / save / dim |
+| 📊 **Live Status Bar** | SYS · LEADS · AREA · CLOCK — all live updated |
+| ✏️ **Custom Area Entry** | Add any area not in the preset list from the picker dialog |
+
+---
+
+*(For detailed column definitions, setup guide, and outreach strategy, read **[`docs/HOW_TO_USE.md`](docs/HOW_TO_USE.md)**.)*
