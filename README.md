@@ -56,6 +56,7 @@ python main.py --cli
 | 🖥️ **Color-coded Console** | 6 log tags: success / bright / warning / error / save / dim |
 | 📊 **Live Status Bar** | SYS · LEADS · AREA · CLOCK — all live updated |
 | ✏️ **Custom Area Entry** | Add any area not in the preset list from the picker dialog |
+| 📡 **Discord Team Telemetry** | Optional `config.json` integration to send rich embed run summaries to Discord |
 
 ---
 

@@ -839,6 +839,15 @@ class ScraperApp:
 
     # ── Boot sequence ─────────────────────────────────────────────────────────
     def _boot_sequence(self):
+        # Check if discord webhook is configured
+        discord_status = "[ OPTIONAL : ADD WEBHOOK IN config.json ]"
+        try:
+            from src.utils.run_logger import get_discord_webhook_url
+            if get_discord_webhook_url():
+                discord_status = "[ ACTIVE : DISCORD TEAM SYNC ENABLED ]"
+        except Exception:
+            pass
+
         lines = [
             ("══════════════════════════════════════════════════════════", "dim"),
             ("  ◈  ANTIGRAVITY NEURAL LEAD ENGINE  —  MATRIX EDITION  ◈", "bright"),
@@ -847,6 +856,7 @@ class ScraperApp:
             ("> CITY DATABASE ............ [ 30 CITIES / 600 AREAS LOADED ]", "success"),
             ("> CATEGORY MODULES ......... [ DENTISTS | REAL ESTATE | SALONS | CA ]", "success"),
             ("> PLAYWRIGHT BROWSER ....... [ ENGINE READY ]", "success"),
+            (f"> TEAM TELEMETRY ........... {discord_status}", "save" if "ACTIVE" in discord_status else "dim"),
             ("> GOOGLE MAPS GRID ......... [ CONNECTED ]", "success"),
             ("──────────────────────────────────────────────────────────", "dim"),
             (">  SYSTEM  ONLINE.   AWAITING  OPERATOR  INPUT.", "bright"),
