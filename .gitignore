@@ -24,3 +24,6 @@ output/*.json
 *.log
 run_history.json
 run_log.csv
+
+# Private Config
+config.json
