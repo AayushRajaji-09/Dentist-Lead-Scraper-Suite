@@ -292,21 +292,22 @@ def parse_lead_name(raw_name: str, name_mode: str):
 def mk_btn(parent, text: str, command, state=tk.NORMAL, width=None) -> tk.Button:
     btn = tk.Button(
         parent, text=text, command=command,
-        bg=BG, fg=FG if state == tk.NORMAL else FG_DIM,
-        activebackground=SEL_CLR, activeforeground=FG_BRIGHT,
-        font=MONO_B, relief=tk.FLAT, bd=0,
-        highlightbackground=BORDER, highlightcolor=FG,
+        bg="#001800" if state == tk.NORMAL else "#000800",
+        fg=FG if state == tk.NORMAL else FG_DIM,
+        activebackground=FG, activeforeground="#000000",
+        font=("Courier New", 10, "bold"), relief=tk.SOLID, bd=1,
+        highlightbackground="#004400", highlightcolor=FG,
         highlightthickness=1, cursor="hand2",
-        padx=10, pady=6, state=state,
+        padx=12, pady=6, state=state,
     )
     if width:
         btn.config(width=width)
     def _enter(e):
         if str(btn["state"]) != "disabled":
-            btn.config(bg=SEL_CLR, fg=FG_BRIGHT, highlightbackground=FG)
+            btn.config(bg=FG, fg="#000000", highlightbackground=FG)
     def _leave(e):
         if str(btn["state"]) != "disabled":
-            btn.config(bg=BG, fg=FG, highlightbackground=BORDER)
+            btn.config(bg="#001800", fg=FG, highlightbackground="#004400")
     btn.bind("<Enter>", _enter)
     btn.bind("<Leave>", _leave)
     return btn
@@ -474,18 +475,18 @@ class CityAreaPickerDialog(tk.Toplevel):
         # Area header row
         ah = tk.Frame(self, bg=BG, padx=14, pady=4)
         ah.pack(fill=tk.X)
-        tk.Label(ah, text="> AREAS TO INCLUDE :", bg=BG, fg=FG_DIM, font=MONO_SM).pack(side=tk.LEFT)
-        self.count_lbl = tk.Label(ah, text="", bg=BG, fg=AMBER, font=MONO_SM)
+        tk.Label(ah, text="> AREAS TO INCLUDE :", bg=BG, fg=FG, font=MONO_B).pack(side=tk.LEFT)
+        self.count_lbl = tk.Label(ah, text="", bg=BG, fg=AMBER, font=MONO_B)
         self.count_lbl.pack(side=tk.LEFT, padx=10)
         mk_btn(ah, "[☐ NONE]", self._none, width=10).pack(side=tk.RIGHT, padx=4)
         mk_btn(ah, "[☑ ALL]",  self._all,  width=10).pack(side=tk.RIGHT, padx=4)
 
         # Scrollable checkboxes
-        cx_outer = tk.Frame(self, bg=FG_DIM, bd=1, relief=tk.FLAT)
-        cx_outer.pack(fill=tk.BOTH, expand=True, padx=10, pady=2)
+        cx_outer = tk.Frame(self, bg=BORDER, bd=1, relief=tk.SOLID)
+        cx_outer.pack(fill=tk.BOTH, expand=True, padx=10, pady=4)
         self._canvas = tk.Canvas(cx_outer, bg=BG, highlightthickness=0)
         vbar = tk.Scrollbar(cx_outer, orient=tk.VERTICAL, command=self._canvas.yview,
-                            bg=BG, troughcolor=BG, activebackground=FG_DIM, width=8, bd=0, relief=tk.FLAT)
+                            bg=BG, troughcolor=BG, activebackground=FG_DIM, width=10, bd=0, relief=tk.FLAT)
         self._canvas.configure(yscrollcommand=vbar.set)
         vbar.pack(side=tk.RIGHT, fill=tk.Y)
         self._canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
@@ -497,22 +498,22 @@ class CityAreaPickerDialog(tk.Toplevel):
         self._canvas.bind_all("<MouseWheel>", self._scroll)
 
         # Custom area entry
-        tk.Frame(self, bg=FG_DIM, height=1).pack(fill=tk.X, padx=10, pady=4)
+        tk.Frame(self, bg=BORDER, height=1).pack(fill=tk.X, padx=10, pady=4)
         cust = tk.Frame(self, bg=BG, padx=14, pady=6)
         cust.pack(fill=tk.X)
-        tk.Label(cust, text="> ADD CUSTOM AREA :", bg=BG, fg=FG_DIM, font=MONO_SM).pack(anchor=tk.W)
+        tk.Label(cust, text="> ADD CUSTOM AREA :", bg=BG, fg=FG, font=MONO_B).pack(anchor=tk.W)
         row = tk.Frame(cust, bg=BG)
         row.pack(fill=tk.X, pady=4)
-        self.custom_e = tk.Entry(row, font=MONO, width=30,
-                                 bg=SEL_CLR, fg=FG, insertbackground=FG,
-                                 relief=tk.FLAT, bd=0,
+        self.custom_e = tk.Entry(row, font=("Courier New", 11, "bold"), width=28,
+                                 bg="#001800", fg=FG, insertbackground=FG,
+                                 relief=tk.SOLID, bd=1,
                                  highlightbackground=BORDER, highlightcolor=FG, highlightthickness=1)
         self.custom_e.pack(side=tk.LEFT, padx=(0, 8))
         self.custom_e.bind("<Return>", lambda e: self._add_custom())
         mk_btn(row, "[+ ADD]", self._add_custom).pack(side=tk.LEFT)
 
         # Footer
-        tk.Frame(self, bg=FG_DIM, height=1).pack(fill=tk.X, padx=10)
+        tk.Frame(self, bg=BORDER, height=1).pack(fill=tk.X, padx=10)
         foot = tk.Frame(self, bg=BG, padx=14, pady=10)
         foot.pack(fill=tk.X)
         mk_btn(foot, "[ ✕  ABORT ]",        self.destroy).pack(side=tk.LEFT)
@@ -533,9 +534,9 @@ class CityAreaPickerDialog(tk.Toplevel):
             tk.Checkbutton(
                 self._cb_frame, text=f"  ▸ {area}", variable=var,
                 bg=BG, fg=FG, activebackground=BG, activeforeground=FG_BRIGHT,
-                selectcolor=SEL_CLR, font=MONO, anchor=tk.W, bd=0,
+                selectcolor="#003800", font=("Courier New", 10, "bold"), anchor=tk.W, bd=0,
                 cursor="hand2", command=self._upd_count,
-            ).grid(row=i // 2, column=i % 2, sticky=tk.W, padx=8, pady=1)
+            ).grid(row=i // 2, column=i % 2, sticky=tk.W, padx=10, pady=3)
         self._upd_count()
         self._canvas.update_idletasks()
         self._canvas.configure(scrollregion=self._canvas.bbox("all"))
@@ -617,15 +618,31 @@ class ScraperApp:
         s = ttk.Style()
         s.theme_use("clam")
         s.configure("Matrix.TCombobox",
-            fieldbackground=BG, background=BG, foreground=FG,
-            selectbackground=SEL_CLR, selectforeground=FG_BRIGHT,
-            arrowcolor=FG, bordercolor=BORDER, insertcolor=FG,
+            fieldbackground="#001800", background="#002800", foreground=FG,
+            selectbackground="#003800", selectforeground="#AAFFAA",
+            arrowcolor=FG, bordercolor=FG, lightcolor=FG, darkcolor=FG,
+            font=("Courier New", 10, "bold"),
         )
         s.map("Matrix.TCombobox",
-            fieldbackground=[("readonly", BG)],
+            fieldbackground=[("readonly", "#001800")],
             foreground=[("readonly", FG)],
-            background=[("active", BORDER)],
+            background=[("active", "#003800")],
         )
+        s.configure("Dlg.TCombobox",
+            fieldbackground="#001800", background="#002800", foreground=FG,
+            selectbackground="#003800", selectforeground="#AAFFAA",
+            arrowcolor=FG, bordercolor=FG,
+            font=("Courier New", 10, "bold"),
+        )
+        s.map("Dlg.TCombobox",
+            fieldbackground=[("readonly", "#001800")],
+            foreground=[("readonly", FG)],
+        )
+        self.root.option_add("*TCombobox*Listbox.background", "#001800")
+        self.root.option_add("*TCombobox*Listbox.foreground", "#00FF41")
+        self.root.option_add("*TCombobox*Listbox.selectBackground", "#00FF41")
+        self.root.option_add("*TCombobox*Listbox.selectForeground", "#000000")
+        self.root.option_add("*TCombobox*Listbox.font", "Courier New 10 bold")
 
     # ── Layout ────────────────────────────────────────────────────────────────
     def _build_ui(self):
@@ -690,13 +707,13 @@ class ScraperApp:
     def _build_settings(self):
         frm = tk.LabelFrame(
             self.root, text="  ⚙  SCRAPER SETTINGS  ",
-            bg=BG, fg=FG_DIM, font=MONO_SM,
-            bd=1, relief=tk.RIDGE, labelanchor="nw",
+            bg=BG, fg=FG_BRIGHT, font=MONO_B,
+            bd=1, relief=tk.SOLID, labelanchor="nw",
         )
         frm.pack(fill=tk.X, padx=8, pady=6)
 
         # Row 0 — Category | Depth
-        tk.Label(frm, text="> CATEGORY :", bg=BG, fg=FG_DIM, font=MONO_SM).grid(
+        tk.Label(frm, text="> CATEGORY :", bg=BG, fg=FG, font=MONO_B).grid(
             row=0, column=0, sticky=tk.W, padx=(14, 6), pady=8)
 
         self.category_var = tk.StringVar(value=CATEGORY_NAMES[0])
@@ -706,18 +723,18 @@ class ScraperApp:
             style="Matrix.TCombobox",
         ).grid(row=0, column=1, sticky=tk.W, padx=6, pady=8)
 
-        tk.Label(frm, text="> DEPTH :", bg=BG, fg=FG_DIM, font=MONO_SM).grid(
+        tk.Label(frm, text="> DEPTH :", bg=BG, fg=FG, font=MONO_B).grid(
             row=0, column=2, sticky=tk.W, padx=(24, 6), pady=8)
         self.scroll_var = tk.IntVar(value=10)
         tk.Spinbox(
             frm, from_=3, to=50, textvariable=self.scroll_var, width=7,
-            bg=SEL_CLR, fg=FG, insertbackground=FG, relief=tk.FLAT,
-            buttonbackground=BORDER, font=MONO,
+            bg="#001800", fg=FG, insertbackground=FG, relief=tk.SOLID, bd=1,
+            buttonbackground=BORDER, font=("Courier New", 11, "bold"),
             highlightbackground=BORDER, highlightthickness=1,
         ).grid(row=0, column=3, sticky=tk.W, padx=6, pady=8)
 
         # Row 1 — City display | button
-        tk.Label(frm, text="> CITY/AREAS :", bg=BG, fg=FG_DIM, font=MONO_SM).grid(
+        tk.Label(frm, text="> CITY/AREAS :", bg=BG, fg=FG, font=MONO_B).grid(
             row=1, column=0, sticky=tk.W, padx=(14, 6), pady=8)
 
         self.city_display_var = tk.StringVar()
@@ -736,7 +753,7 @@ class ScraperApp:
             text="  > HEADLESS EXECUTION  (background browser — faster, no visible window)",
             variable=self.headless_var,
             bg=BG, fg=FG, activebackground=BG, activeforeground=FG_BRIGHT,
-            selectcolor=SEL_CLR, font=MONO, anchor=tk.W, cursor="hand2",
+            selectcolor="#003800", font=("Courier New", 10, "bold"), anchor=tk.W, bd=0, cursor="hand2",
         ).grid(row=2, column=0, columnspan=4, sticky=tk.W, padx=14, pady=(2, 10))
 
     # ── 3. Action buttons ─────────────────────────────────────────────────────
@@ -755,20 +772,20 @@ class ScraperApp:
     # ── 4. Console ────────────────────────────────────────────────────────────
     def _build_console(self):
         tk.Label(self.root, text="  ◈  LIVE NEURAL FEED  ◈",
-                 bg=BG, fg=FG_DIM, font=MONO_SM).pack(anchor=tk.W, padx=10)
+                 bg=BG, fg=FG_BRIGHT, font=("Courier New", 10, "bold")).pack(anchor=tk.W, padx=10, pady=(4, 2))
 
-        outer = tk.Frame(self.root, bg=FG_DIM, bd=1, relief=tk.FLAT)
+        outer = tk.Frame(self.root, bg=BORDER, bd=1, relief=tk.SOLID)
         outer.pack(fill=tk.BOTH, expand=True, padx=8, pady=(0, 4))
 
         self.console = scrolledtext.ScrolledText(
-            outer, wrap=tk.WORD, font=("Courier New", 9),
+            outer, wrap=tk.WORD, font=("Courier New", 10),
             bg=BG, fg=FG, insertbackground=FG,
             state=tk.DISABLED, relief=tk.FLAT, bd=0,
         )
         self.console.pack(fill=tk.BOTH, expand=True)
         self.console.vbar.config(
             bg=BG, troughcolor=BG, activebackground=FG_DIM,
-            width=8, bd=0, relief=tk.FLAT,
+            width=10, bd=0, relief=tk.FLAT,
         )
 
         # Color tags
@@ -777,35 +794,35 @@ class ScraperApp:
         self.console.tag_configure("warning", foreground=AMBER)
         self.console.tag_configure("error",   foreground=RED_CLR)
         self.console.tag_configure("save",    foreground=CYAN_CLR)
-        self.console.tag_configure("dim",     foreground=FG_DIM)
-        self.console.tag_configure("ts",      foreground=FG_DIM)
+        self.console.tag_configure("dim",     foreground="#008822")
+        self.console.tag_configure("ts",      foreground="#008822")
 
     # ── 5. Status bar ─────────────────────────────────────────────────────────
     def _build_status_bar(self):
-        bar = tk.Frame(self.root, bg=BORDER, pady=4)
+        bar = tk.Frame(self.root, bg="#001800", pady=5)
         bar.pack(fill=tk.X, side=tk.BOTTOM)
 
-        tk.Label(bar, text=" ◈ ", bg=BORDER, fg=FG_DIM, font=MONO_SM).pack(side=tk.LEFT)
+        tk.Label(bar, text=" ◈ ", bg="#001800", fg=FG, font=MONO_B).pack(side=tk.LEFT)
 
-        self.lbl_sys = tk.Label(bar, text="SYS: ONLINE", bg=BORDER, fg=FG, font=MONO_SM)
+        self.lbl_sys = tk.Label(bar, text="SYS: ONLINE", bg="#001800", fg=FG_BRIGHT, font=MONO_B)
         self.lbl_sys.pack(side=tk.LEFT, padx=6)
         self._sep(bar)
 
-        self.lbl_leads = tk.Label(bar, text="LEADS: 0", bg=BORDER, fg=AMBER, font=MONO_SM)
+        self.lbl_leads = tk.Label(bar, text="LEADS: 0", bg="#001800", fg=AMBER, font=MONO_B)
         self.lbl_leads.pack(side=tk.LEFT, padx=6)
         self._sep(bar)
 
-        self.lbl_area = tk.Label(bar, text="AREA: ---", bg=BORDER, fg=FG, font=MONO_SM)
+        self.lbl_area = tk.Label(bar, text="AREA: ---", bg="#001800", fg=FG, font=MONO_B)
         self.lbl_area.pack(side=tk.LEFT, padx=6)
 
         # Right side
-        self.lbl_clock = tk.Label(bar, text="", bg=BORDER, fg=FG, font=MONO_SM)
+        self.lbl_clock = tk.Label(bar, text="", bg="#001800", fg=FG_BRIGHT, font=MONO_B)
         self.lbl_clock.pack(side=tk.RIGHT, padx=8)
         self._sep(bar, side=tk.RIGHT)
-        tk.Label(bar, text="ANTIGRAVITY ENGINE v3.0 ", bg=BORDER, fg=FG_DIM, font=MONO_SM).pack(side=tk.RIGHT)
+        tk.Label(bar, text="ANTIGRAVITY ENGINE v3.0 ", bg="#001800", fg=FG, font=MONO_B).pack(side=tk.RIGHT)
 
     def _sep(self, parent, side=tk.LEFT):
-        tk.Label(parent, text="|", bg=BORDER, fg=FG_DIM, font=MONO_SM).pack(side=side, padx=2)
+        tk.Label(parent, text="|", bg="#001800", fg="#005511", font=MONO_B).pack(side=side, padx=3)
 
     # ── Helpers ───────────────────────────────────────────────────────────────
     def _refresh_city_lbl(self):
