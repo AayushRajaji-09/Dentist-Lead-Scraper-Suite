@@ -72,15 +72,38 @@ def extract_emails_from_website(url):
         pass
     return "No Email Found"
 
-# ── Logging fallback ──────────────────────────────────────────────────────────
+# ── Logging & dedup helpers fallback ─────────────────────────────────────────
 try:
-    from src.utils.run_logger import log_run
+    from src.utils.run_logger import (
+        log_run, load_seen_fingerprints, save_seen_fingerprints,
+        make_lead_fingerprint, clear_city_fingerprints
+    )
 except ImportError:
     try:
-        from run_logger import log_run
+        from run_logger import (
+            log_run, load_seen_fingerprints, save_seen_fingerprints,
+            make_lead_fingerprint, clear_city_fingerprints
+        )
     except ImportError:
-        def log_run(*args, **kwargs):
-            pass
+        def log_run(*args, **kwargs): pass
+        def load_seen_fingerprints(city): return set()
+        def save_seen_fingerprints(city, fps): pass
+        def make_lead_fingerprint(phone, name, url): return f"{phone}|{name}|{url}"
+        def clear_city_fingerprints(city): pass
+
+# ── System auto-optimizer ─────────────────────────────────────────────────────
+try:
+    from src.utils.system_optimizer import auto_optimize_system
+except ImportError:
+    try:
+        from system_optimizer import auto_optimize_system
+    except ImportError:
+        def auto_optimize_system(**_):
+            return {"os_name": "Windows", "cpus": 4, "profile_name": "BALANCED",
+                    "scroll_depth": 10, "http_timeout": 4,
+                    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+                    "fonts": {"ui": "Segoe UI", "mono": "Courier New"},
+                    "window_size": "980x760"}
 
 # ── Category config fallback ──────────────────────────────────────────────────
 try:
@@ -664,8 +687,13 @@ class ScraperApp:
 
     def __init__(self, root: tk.Tk):
         self.root     = root
-        self.root.title("◈  ANTIGRAVITY LEAD SCRAPER SUITE  v3.0  |  MATRIX EDITION")
-        self.root.geometry("980x760")
+
+        # ── Run system auto-optimizer before anything else ────────────────
+        _sw = root.winfo_screenwidth()
+        self.SYS_CFG = auto_optimize_system(screen_width=_sw)
+
+        self.root.title("◈  ANTIGRAVITY LEAD SCRAPER SUITE  v3.1  |  MATRIX EDITION")
+        self.root.geometry(self.SYS_CFG["window_size"])
         self.root.minsize(820, 620)
         self.root.configure(bg=BG)
 
@@ -821,7 +849,17 @@ class ScraperApp:
             variable=self.headless_var,
             bg=BG, fg=FG, activebackground=BG, activeforeground=FG_BRIGHT,
             selectcolor="#003800", font=("Courier New", 10, "bold"), anchor=tk.W, bd=0, cursor="hand2",
-        ).grid(row=2, column=0, columnspan=4, sticky=tk.W, padx=14, pady=(2, 10))
+        ).grid(row=2, column=0, columnspan=4, sticky=tk.W, padx=14, pady=(2, 4))
+
+        # Row 3 — Force Re-Scrape (bypass dedup registry)
+        self.force_rescrape_var = tk.BooleanVar(value=False)
+        tk.Checkbutton(
+            frm,
+            text="  > FORCE RE-SCRAPE  (ignore previous session data — collect all leads fresh)",
+            variable=self.force_rescrape_var,
+            bg=BG, fg=AMBER, activebackground=BG, activeforeground=FG_BRIGHT,
+            selectcolor="#003800", font=("Courier New", 10, "bold"), anchor=tk.W, bd=0, cursor="hand2",
+        ).grid(row=3, column=0, columnspan=4, sticky=tk.W, padx=14, pady=(2, 10))
 
     # ── 3. Action buttons ─────────────────────────────────────────────────────
     def _build_action_bar(self):
@@ -923,7 +961,7 @@ class ScraperApp:
 
     # ── Boot sequence ─────────────────────────────────────────────────────────
     def _boot_sequence(self):
-        # Check if discord webhook is configured
+        cfg = self.SYS_CFG
         discord_status = "[ OPTIONAL : ADD WEBHOOK IN config.json ]"
         try:
             from src.utils.run_logger import get_discord_webhook_url
@@ -943,11 +981,18 @@ class ScraperApp:
             (f"> TEAM TELEMETRY ........... {discord_status}", "save" if "ACTIVE" in discord_status else "dim"),
             ("> GOOGLE MAPS GRID ......... [ CONNECTED ]", "success"),
             ("──────────────────────────────────────────────────────────", "dim"),
+            (f"> SYSTEM PROFILED .......... [ {cfg['os_name']} | {cfg['cpus']}-CORE CPU | {cfg['profile_name']} MODE ]", "save"),
+            (f"> PERFORMANCE PROFILE ...... [ SCROLL DEPTH: {cfg['scroll_depth']} | TIMEOUT: {cfg['http_timeout']}s ]", "save"),
+            ("> SMART DEDUP ENGINE ....... [ PER-CITY FINGERPRINT REGISTRY ACTIVE ]", "save"),
+            ("──────────────────────────────────────────────────────────", "dim"),
             (">  SYSTEM  ONLINE.   AWAITING  OPERATOR  INPUT.", "bright"),
             ("", "success"),
         ]
         for i, (text, tag) in enumerate(lines):
             self.root.after(i * 160, lambda t=text, tg=tag: self.log(t, tg))
+
+        # Auto-set scroll depth based on system profile
+        self.scroll_var.set(cfg["scroll_depth"])
 
     # ── Button handlers ───────────────────────────────────────────────────────
     def open_city_dialog(self):
@@ -1021,14 +1066,18 @@ class ScraperApp:
         seen_urls:    set   = set()
         seen_phones:  set   = set()
 
+        # ── Persistent dedup fingerprint registry ─────────────────────────────
+        force_rescrape = self.force_rescrape_var.get()
+        if force_rescrape:
+            clear_city_fingerprints(city)
+            self.log("> FORCE RE-SCRAPE ENABLED — dedup registry cleared for this city.", "warning")
+        seen_fingerprints = load_seen_fingerprints(city)
+        self.log(f"> DEDUP REGISTRY LOADED — {len(seen_fingerprints)} previously seen leads for {city}.", "dim")
+
         try:
             with sync_playwright() as p:
                 browser = p.chromium.launch(headless=headless)
-                context = browser.new_context(user_agent=(
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                    "AppleWebKit/537.36 (KHTML, like Gecko) "
-                    "Chrome/120.0.0.0 Safari/537.36"
-                ))
+                context = browser.new_context(user_agent=self.SYS_CFG["user_agent"])
                 page = context.new_page()
 
                 for ai, area in enumerate(areas, 1):
@@ -1107,6 +1156,13 @@ class ScraperApp:
 
                             first_name, surname = parse_lead_name(raw_name, name_mode)
 
+                            # ── Persistent dedup fingerprint check ────────────────────
+                            fp = make_lead_fingerprint(phone, raw_name, clean_url)
+                            if fp in seen_fingerprints:
+                                self.log(f"  ⏩  SKIP (known) — {(raw_name or 'Unknown')[:24]}", "dim")
+                                continue
+                            seen_fingerprints.add(fp)
+
                             results.append({
                                 "City": city, "Area": area, "Category": cat_key,
                                 "First Name": first_name if first_name else raw_name,
@@ -1137,7 +1193,8 @@ class ScraperApp:
 
                     if results:
                         save_leads_to_file(results, output_file)
-                        self.log(f"  💾  CHECKPOINT → {len(results)} LEADS SAVED TO DISK", "save")
+                        save_seen_fingerprints(city, seen_fingerprints)
+                        self.log(f"  💾  CHECKPOINT → {len(results)} LEADS SAVED TO DISK | DEDUP REGISTRY UPDATED", "save")
 
                 browser.close()
 
