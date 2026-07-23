@@ -14,5 +14,13 @@
         "leads_found": 6,
         "output_file": "C:\\Users\\DELL\\Dentist-Lead-Scraper-Suite\\output\\Dentists_Ahmedabad_Leads.xlsx",
         "status": "Success"
+    },
+    {
+        "timestamp": "2026-07-23 22:36:27",
+        "city": "Ahmedabad",
+        "areas_scraped": 1,
+        "leads_found": 8,
+        "output_file": "C:\\Users\\aayus\\Desktop\\Dentist-Lead-Scraper-Suite\\output\\Dentists_Ahmedabad_Leads.xlsx",
+        "status": "Success"
     }
 ]
