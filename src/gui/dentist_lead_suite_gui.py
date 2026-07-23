@@ -1,5 +1,5 @@
 """
-🚀 Antigravity Lead Scraper Suite v3.0 — MATRIX EDITION
+🚀 Antigravity Lead Scraper Suite v3.1 — MATRIX EDITION
 Deep-green terminal aesthetic:
   ▸ Falling Katakana rain animation on header canvas
   ▸ Typewriter boot sequence on startup
@@ -26,84 +26,33 @@ from playwright.sync_api import sync_playwright
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
+# ── Shared utilities ─────────────────────────────────────────────────────────
+try:
+    from src.utils.helpers import (
+        save_leads_to_file, extract_emails_from_website, parse_lead_name
+    )
+except ImportError:
+    from helpers import (
+        save_leads_to_file, extract_emails_from_website, parse_lead_name
+    )
 
-def save_leads_to_file(results: list, output_file: str):
-    if not results:
-        return
-    try:
-        import openpyxl
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.title = "Leads"
-        headers = list(results[0].keys())
-        ws.append(headers)
-        for r in results:
-            ws.append([str(r.get(h, "")) for h in headers])
-        wb.save(output_file)
-        return
-    except ImportError:
-        pass
-    if pd is not None:
-        try:
-            pd.DataFrame(results).to_excel(output_file, index=False)
-            return
-        except Exception:
-            pass
-    import csv
-    csv_file = output_file.replace(".xlsx", ".csv") if output_file.endswith(".xlsx") else output_file + ".csv"
-    with open(csv_file, "w", newline="", encoding="utf-8-sig") as f:
-        headers = list(results[0].keys())
-        writer = csv.DictWriter(f, fieldnames=headers)
-        writer.writeheader()
-        writer.writerows(results)
-
-def extract_emails_from_website(url):
-    """Fetches the homepage and extracts an email using regex."""
-    if not url or url == "No Website":
-        return "No Email Found"
-    try:
-        response = requests.get(url, timeout=4, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"})
-        if response.status_code == 200:
-            emails = set(re.findall(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+", response.text))
-            filtered = [e for e in emails if not e.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.svg', '.wixpress.com', 'sentry.io')) and not e.lower().startswith(('sentry@', 'wix@'))]
-            if filtered:
-                return filtered[0]
-    except Exception:
-        pass
-    return "No Email Found"
-
-# ── Logging & dedup helpers fallback ─────────────────────────────────────────
+# ── Logging & dedup helpers ──────────────────────────────────────────────────
 try:
     from src.utils.run_logger import (
         log_run, load_seen_fingerprints, save_seen_fingerprints,
         make_lead_fingerprint, clear_city_fingerprints
     )
 except ImportError:
-    try:
-        from run_logger import (
-            log_run, load_seen_fingerprints, save_seen_fingerprints,
-            make_lead_fingerprint, clear_city_fingerprints
-        )
-    except ImportError:
-        def log_run(*args, **kwargs): pass
-        def load_seen_fingerprints(city): return set()
-        def save_seen_fingerprints(city, fps): pass
-        def make_lead_fingerprint(phone, name, url): return f"{phone}|{name}|{url}"
-        def clear_city_fingerprints(city): pass
+    from run_logger import (
+        log_run, load_seen_fingerprints, save_seen_fingerprints,
+        make_lead_fingerprint, clear_city_fingerprints
+    )
 
 # ── System auto-optimizer ─────────────────────────────────────────────────────
 try:
     from src.utils.system_optimizer import auto_optimize_system
 except ImportError:
-    try:
-        from system_optimizer import auto_optimize_system
-    except ImportError:
-        def auto_optimize_system(**_):
-            return {"os_name": "Windows", "cpus": 4, "profile_name": "BALANCED",
-                    "scroll_depth": 10, "http_timeout": 4,
-                    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-                    "fonts": {"ui": "Segoe UI", "mono": "Courier New"},
-                    "window_size": "980x760"}
+    from system_optimizer import auto_optimize_system
 
 # ── Category config fallback ──────────────────────────────────────────────────
 try:
@@ -794,7 +743,7 @@ class ScraperApp:
         )
         self.rain_canvas.create_text(
             cx, 78,
-            text="LEAD  SCRAPER  SUITE   v3.0   |   GOOGLE  MAPS  NEURAL  ENGINE",
+            text="LEAD  SCRAPER  SUITE   v3.1   |   GOOGLE  MAPS  NEURAL  ENGINE",
             fill=FG_DIM, font=("Courier New", 9, "bold"), tags="banner",
         )
         # Bottom accent line
@@ -924,7 +873,7 @@ class ScraperApp:
         self.lbl_clock = tk.Label(bar, text="", bg="#001800", fg=FG_BRIGHT, font=MONO_B)
         self.lbl_clock.pack(side=tk.RIGHT, padx=8)
         self._sep(bar, side=tk.RIGHT)
-        tk.Label(bar, text="ANTIGRAVITY ENGINE v3.0 ", bg="#001800", fg=FG, font=MONO_B).pack(side=tk.RIGHT)
+        tk.Label(bar, text="ANTIGRAVITY ENGINE v3.1 ", bg="#001800", fg=FG, font=MONO_B).pack(side=tk.RIGHT)
 
     def _sep(self, parent, side=tk.LEFT):
         tk.Label(parent, text="|", bg="#001800", fg="#005511", font=MONO_B).pack(side=side, padx=3)
