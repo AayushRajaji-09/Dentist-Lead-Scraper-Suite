@@ -742,12 +742,19 @@ class ScraperApp:
             fill=FG_BRIGHT, font=("Courier New", 22, "bold"), tags="banner",
         )
         self.rain_canvas.create_text(
-            cx, 78,
+            cx, 75,
             text="LEAD  SCRAPER  SUITE   v3.1   |   GOOGLE  MAPS  NEURAL  ENGINE",
             fill=FG_DIM, font=("Courier New", 9, "bold"), tags="banner",
         )
+        cfg = self.SYS_CFG
+        spec_str = f"⚡ SYSTEM SPEC : {cfg['os_name'].upper()} ({cfg['cpus']}-CORE CPU)   |   MODE : {cfg['profile_name']} (DEPTH {cfg['scroll_depth']})"
+        self.rain_canvas.create_text(
+            cx, 93,
+            text=spec_str,
+            fill=CYAN_CLR, font=("Courier New", 9, "bold"), tags="banner",
+        )
         # Bottom accent line
-        self.rain_canvas.create_line(cx - 360, 104, cx + 360, 104, fill=FG_DIM, tags="banner")
+        self.rain_canvas.create_line(cx - 360, 108, cx + 360, 108, fill=FG_DIM, tags="banner")
 
     # ── 2. Settings panel ─────────────────────────────────────────────────────
     def _build_settings(self):
@@ -808,7 +815,16 @@ class ScraperApp:
             variable=self.force_rescrape_var,
             bg=BG, fg=AMBER, activebackground=BG, activeforeground=FG_BRIGHT,
             selectcolor="#003800", font=("Courier New", 10, "bold"), anchor=tk.W, bd=0, cursor="hand2",
-        ).grid(row=3, column=0, columnspan=4, sticky=tk.W, padx=14, pady=(2, 10))
+        ).grid(row=3, column=0, columnspan=4, sticky=tk.W, padx=14, pady=(2, 4))
+
+        # Row 4 — Persistent System Profile Badge
+        cfg = self.SYS_CFG
+        spec_txt = f"⚡ HARDWARE PROFILE : {cfg['os_name']} ({cfg['cpus']}-Core CPU)   |   MODE : {cfg['profile_name']}   |   AUTO-DEPTH : {cfg['scroll_depth']}   |   TIMEOUT : {cfg['http_timeout']}s"
+        tk.Label(
+            frm, text=spec_txt,
+            bg="#001800", fg=CYAN_CLR, font=("Courier New", 9, "bold"),
+            anchor=tk.W, relief=tk.SOLID, bd=1, highlightbackground=BORDER,
+        ).grid(row=4, column=0, columnspan=4, sticky=tk.EW, padx=14, pady=(2, 8))
 
     # ── 3. Action buttons ─────────────────────────────────────────────────────
     def _build_action_bar(self):
@@ -856,9 +872,11 @@ class ScraperApp:
         bar = tk.Frame(self.root, bg="#001800", pady=5)
         bar.pack(fill=tk.X, side=tk.BOTTOM)
 
+        cfg = self.SYS_CFG
         tk.Label(bar, text=" ◈ ", bg="#001800", fg=FG, font=MONO_B).pack(side=tk.LEFT)
 
-        self.lbl_sys = tk.Label(bar, text="SYS: ONLINE", bg="#001800", fg=FG_BRIGHT, font=MONO_B)
+        sys_label_txt = f"SYS: {cfg['profile_name']} MODE ({cfg['cpus']}-CORE)"
+        self.lbl_sys = tk.Label(bar, text=sys_label_txt, bg="#001800", fg=CYAN_CLR, font=MONO_B)
         self.lbl_sys.pack(side=tk.LEFT, padx=6)
         self._sep(bar)
 
