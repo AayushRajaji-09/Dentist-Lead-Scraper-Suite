@@ -1,0 +1,18 @@
+[
+    {
+        "timestamp": "2026-07-15 22:29:32",
+        "city": "Ahmedabad",
+        "areas_scraped": 1,
+        "leads_found": 5,
+        "output_file": "C:\\Users\\DELL\\Dentist-Lead-Scraper-Suite\\output\\Dentists_Ahmedabad_Leads.xlsx",
+        "status": "Success"
+    },
+    {
+        "timestamp": "2026-07-16 17:13:27",
+        "city": "Ahmedabad",
+        "areas_scraped": 1,
+        "leads_found": 6,
+        "output_file": "C:\\Users\\DELL\\Dentist-Lead-Scraper-Suite\\output\\Dentists_Ahmedabad_Leads.xlsx",
+        "status": "Success"
+    }
+]
