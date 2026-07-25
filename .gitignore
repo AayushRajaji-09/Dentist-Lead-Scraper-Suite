@@ -27,3 +27,7 @@ run_log.csv
 
 # Private Config
 config.json
+
+# OS & System files
+.DS_Store
+*.DS_Store

@@ -767,6 +767,8 @@ class ScraperApp:
         self.stop_btn = mk_btn(frm, "[ ⏹  ABORT MISSION ]", self.stop_scraper, state=tk.DISABLED)
         self.stop_btn.pack(side=tk.LEFT, padx=4)
 
+        mk_btn(frm, "[ ✉️  EMAIL CAMPAIGN MATRIX ]", self.open_emailer).pack(side=tk.LEFT, padx=(16, 4))
+
         mk_btn(frm, "[ 📁  OUTPUT DIR ]", self.open_folder).pack(side=tk.RIGHT)
 
     # ── 4. Console ────────────────────────────────────────────────────────────
@@ -917,6 +919,18 @@ class ScraperApp:
         out_dir  = os.path.join(root_dir, 'output')
         os.makedirs(out_dir, exist_ok=True)
         os.startfile(out_dir)
+
+    def open_emailer(self):
+        try:
+            from src.gui.email_sender_gui import EmailSenderApp
+        except ImportError:
+            try:
+                from email_sender_gui import EmailSenderApp
+            except ImportError as e:
+                messagebox.showerror("Error", f"Could not import EmailSenderApp:\n{e}")
+                return
+        self.log("> LAUNCHING PRO OUTREACH CAMPAIGN ENGINE...", "bright")
+        EmailSenderApp(self.root)
 
     def _on_close(self):
         if self.rain:

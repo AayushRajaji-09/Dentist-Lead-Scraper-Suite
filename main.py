@@ -17,6 +17,11 @@ def main():
         from src.scraper.free_dentist_scraper import main as scraper_main
         if callable(scraper_main):
             scraper_main()
+    elif "--campaign" in sys.argv or "--emailer" in sys.argv or "--email" in sys.argv:
+        print("✉️  Launching Antigravity Matrix Pro Outreach Campaign Engine (v2.0)...")
+        from src.gui.email_sender_gui import main as emailer_main
+        if callable(emailer_main):
+            emailer_main()
     else:
         print("🚀 Launching Antigravity Lead Scraper Suite v3.0 GUI...")
         from src.gui.dentist_lead_suite_gui import main as gui_main
