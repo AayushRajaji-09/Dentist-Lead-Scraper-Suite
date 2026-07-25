@@ -58,14 +58,15 @@ def mk_btn(parent, text: str, command, state=tk.NORMAL, width=None) -> tk.Button
     )
     if width:
         btn.config(width=width)
-    def _enter(e):
-        if str(btn["state"]) != "disabled":
-            btn.config(bg=FG, fg="#000000", highlightbackground=FG)
-    def _leave(e):
-        if str(btn["state"]) != "disabled":
-            btn.config(bg="#0D2818", fg="#000000", highlightbackground=BORDER)
-    btn.bind("<Enter>", _enter)
-    btn.bind("<Leave>", _leave)
+    if sys.platform != 'darwin':
+        def _enter(e):
+            if str(btn["state"]) != "disabled":
+                btn.config(bg=FG, fg="#000000", highlightbackground=FG)
+        def _leave(e):
+            if str(btn["state"]) != "disabled":
+                btn.config(bg="#0D2818", fg="#000000", highlightbackground=BORDER)
+        btn.bind("<Enter>", _enter)
+        btn.bind("<Leave>", _leave)
     return btn
 
 def mk_radio(parent, text, variable, value, fg_color=None, command=None):
@@ -259,15 +260,16 @@ class EmailSenderApp:
                 highlightthickness=0,
                 command=lambda i=idx: self.switch_tab(i)
             )
-            # Hover effects for inactive tabs
-            def _tab_enter(e, b=btn):
-                if b.cget("relief") == tk.FLAT:  # Only for inactive tabs
-                    b.config(bg=TAB_HOVER, fg="#000000")
-            def _tab_leave(e, b=btn):
-                if b.cget("relief") == tk.FLAT:
-                    b.config(bg=BG, fg="#000000")
-            btn.bind("<Enter>", _tab_enter)
-            btn.bind("<Leave>", _tab_leave)
+            if sys.platform != 'darwin':
+                # Hover effects for inactive tabs
+                def _tab_enter(e, b=btn):
+                    if b.cget("relief") == tk.FLAT:  # Only for inactive tabs
+                        b.config(bg=TAB_HOVER, fg="#000000")
+                def _tab_leave(e, b=btn):
+                    if b.cget("relief") == tk.FLAT:
+                        b.config(bg=BG, fg="#000000")
+                btn.bind("<Enter>", _tab_enter)
+                btn.bind("<Leave>", _tab_leave)
             btn.pack(side=tk.LEFT, padx=3)
             self.tab_buttons.append(btn)
 
@@ -468,12 +470,13 @@ class EmailSenderApp:
                 padx=8, pady=4,
                 command=lambda tag=c: self.insert_placeholder_chip(tag)
             )
-            def _chip_enter(e, b=btn):
-                b.config(bg=FG, fg="#000000")
-            def _chip_leave(e, b=btn):
-                b.config(bg=CHIP_BG, fg="#000000")
-            btn.bind("<Enter>", _chip_enter)
-            btn.bind("<Leave>", _chip_leave)
+            if sys.platform != 'darwin':
+                def _chip_enter(e, b=btn):
+                    b.config(bg=FG, fg="#000000")
+                def _chip_leave(e, b=btn):
+                    b.config(bg=CHIP_BG, fg="#000000")
+                btn.bind("<Enter>", _chip_enter)
+                btn.bind("<Leave>", _chip_leave)
             btn.pack(side=tk.LEFT, padx=5, pady=3)
 
         # Editor Area Split: Left Input, Right Preview

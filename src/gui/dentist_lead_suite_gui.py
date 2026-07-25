@@ -303,14 +303,15 @@ def mk_btn(parent, text: str, command, state=tk.NORMAL, width=None) -> tk.Button
     )
     if width:
         btn.config(width=width)
-    def _enter(e):
-        if str(btn["state"]) != "disabled":
-            btn.config(bg=FG, fg="#000000", highlightbackground=FG)
-    def _leave(e):
-        if str(btn["state"]) != "disabled":
-            btn.config(bg="#001800", fg="#000000", highlightbackground="#004400")
-    btn.bind("<Enter>", _enter)
-    btn.bind("<Leave>", _leave)
+    if sys.platform != 'darwin':
+        def _enter(e):
+            if str(btn["state"]) != "disabled":
+                btn.config(bg=FG, fg="#000000", highlightbackground=FG)
+        def _leave(e):
+            if str(btn["state"]) != "disabled":
+                btn.config(bg="#001800", fg="#000000", highlightbackground="#004400")
+        btn.bind("<Enter>", _enter)
+        btn.bind("<Leave>", _leave)
     return btn
 
 
