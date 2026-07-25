@@ -12,6 +12,7 @@ import os
 import re
 import sys
 import random
+import subprocess
 import threading
 import time
 import tkinter as tk
@@ -293,7 +294,7 @@ def mk_btn(parent, text: str, command, state=tk.NORMAL, width=None) -> tk.Button
     btn = tk.Button(
         parent, text=text, command=command,
         bg="#001800" if state == tk.NORMAL else "#000800",
-        fg=FG if state == tk.NORMAL else FG_DIM,
+        fg="#000000" if state == tk.NORMAL else "#555555",
         activebackground=FG, activeforeground="#000000",
         font=("Courier New", 10, "bold"), relief=tk.SOLID, bd=1,
         highlightbackground="#004400", highlightcolor=FG,
@@ -307,7 +308,7 @@ def mk_btn(parent, text: str, command, state=tk.NORMAL, width=None) -> tk.Button
             btn.config(bg=FG, fg="#000000", highlightbackground=FG)
     def _leave(e):
         if str(btn["state"]) != "disabled":
-            btn.config(bg="#001800", fg=FG, highlightbackground="#004400")
+            btn.config(bg="#001800", fg="#000000", highlightbackground="#004400")
     btn.bind("<Enter>", _enter)
     btn.bind("<Leave>", _leave)
     return btn
@@ -918,7 +919,15 @@ class ScraperApp:
         root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
         out_dir  = os.path.join(root_dir, 'output')
         os.makedirs(out_dir, exist_ok=True)
-        os.startfile(out_dir)
+        try:
+            if sys.platform == 'darwin':       # macOS
+                subprocess.call(['open', out_dir])
+            elif sys.platform == 'win32':      # Windows
+                os.startfile(out_dir)
+            else:                              # Linux
+                subprocess.call(['xdg-open', out_dir])
+        except Exception as e:
+            self.log(f"> Could not open output folder: {e}", "warning")
 
     def open_emailer(self):
         try:
