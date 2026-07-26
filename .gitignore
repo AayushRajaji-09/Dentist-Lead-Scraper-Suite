@@ -1,5 +1,33 @@
+# Virtual environments & Python cache
 __pycache__/
 *.py[cod]
 *$py.class
 .venv/
+venv/
+env/
+*.env
+*.env.*
+
+# IDE & Editor folders
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Output & Scraped Data
 output/*.xlsx
+output/*.csv
+output/*.json
+*.xlsx
+
+# Logs
+*.log
+run_history.json
+run_log.csv
+
+# Private Config
+config.json
+
+# OS & System files
+.DS_Store
+*.DS_Store

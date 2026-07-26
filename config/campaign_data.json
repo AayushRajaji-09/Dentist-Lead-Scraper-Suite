@@ -1,0 +1,42 @@
+{
+    "templates": {
+        "Dental Intro": {
+            "subject": "Increasing patient acquisition at {Business Name}",
+            "body": "Hello {First Name},\n\nI noticed {Business Name} is listed in {City} with a solid Google rating of {Rating}.\n\nWe specialize in automated patient acquisition and AI-driven appointment reminders specifically for dental practices. Many clinics in {City} are seeing a 30% boost in recurring check-ups using our automated recall system.\n\nWould you be open to a quick 5-minute chat this week to see how it works for {Business Name}?\n\nBest regards,"
+        },
+        "AI Receptionist": {
+            "subject": "24/7 AI Receptionist for {Business Name} \u2014 Never miss a patient call",
+            "body": "Hi Dr. {Surname},\n\nWhen patients call {Business Name} after hours or during busy clinic times, unanswered calls often turn into lost appointments.\n\nOur voice AI receptionist integrates directly with dental booking systems to answer calls 24/7, answer common clinic questions, and book appointments instantly.\n\nAre you available for a brief 10-minute demo on Tuesday to test the AI voice live?\n\nWarm regards,"
+        },
+        "Clinic Follow-up": {
+            "subject": "Following up: Dental automation for {Business Name}",
+            "body": "Hello {First Name},\n\nI wanted to quickly follow up on my previous note regarding patient acquisition and workflow automation for {Business Name} in {City}.\n\nWe know running a busy clinic takes all your focus. If you'd like to see a quick 3-minute video walkthrough of how we save dental front desks 15 hours a week, just reply 'VIDEO' to this email.\n\nBest regards,"
+        },
+        "Pricing": {
+            "subject": "Transparent pricing & ROI for {Business Name}",
+            "body": "Hi {First Name},\n\nWe believe in 100% transparent pricing for dental practices. Our complete automated lead nurturing suite starts at just $199/month with zero setup fees and no long-term lock-in contracts.\n\nFor {Business Name}, our system typically pays for itself with just 1 or 2 new high-value dental implant or Invisalign patients per month.\n\nWould you like me to send over our complete feature & pricing brochure?\n\nBest,"
+        },
+        "Reminder": {
+            "subject": "Quick reminder regarding {Business Name}'s online growth",
+            "body": "Hello Dr. {Surname},\n\nJust a friendly check-in! As dental clinics in {City} continue expanding their digital presence, automated patient reviews and lead follow-ups have become essential.\n\nLet me know if you have 5 minutes this Thursday to discuss strategies tailored to {Business Name}.\n\nRegards,"
+        },
+        "Demo Invitation": {
+            "subject": "Live 10-Minute VIP Demo Invitation for {Business Name}",
+            "body": "Hi {First Name},\n\nYou are invited to a 1-on-1 personalized demo of the Antigravity Lead Growth Engine tailored specifically for {Business Name}.\n\nDuring this 10-minute session, we will show you:\n1. How to automatically nurture your Google Maps leads.\n2. How to convert missed calls into booked appointments.\n3. How to generate 5-star Google reviews on autopilot.\n\nSimply reply with your preferred day and time this week to lock in your session.\n\nSincerely,"
+        }
+    },
+    "signatures": {
+        "Founder / Default": "Nitin Kumar\nFounder & CEO | Antigravity AI Suite\n\ud83c\udf10 Website: https://antigravity.dev\n\ud83d\udcf1 Phone: +91 98765 43210\n\ud83d\udd17 LinkedIn: https://linkedin.com/in/nitinkumar"
+    },
+    "smtp": {
+        "host": "smtp.gmail.com",
+        "port": 587,
+        "user": "",
+        "password": "",
+        "ssl_mode": false,
+        "max_per_hour": 100,
+        "delay_min": 3,
+        "delay_max": 8
+    },
+    "last_campaign": {}
+}

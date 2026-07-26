@@ -314,9 +314,9 @@ def parse_lead_name(raw_name: str, name_mode: str):
 def mk_btn(parent, text: str, command, state=tk.NORMAL, width=None) -> tk.Button:
     btn = tk.Button(
         parent, text=text, command=command,
-        bg="#001800" if state == tk.NORMAL else "#000800",
-        fg=FG if state == tk.NORMAL else FG_DIM,
-        activebackground=FG, activeforeground="#000000",
+        bg=FG if state == tk.NORMAL else "#000800",
+        fg="#000000" if state == tk.NORMAL else FG_DIM,
+        activebackground="#00CC33", activeforeground="#000000",
         font=("Courier New", 10, "bold"), relief=tk.SOLID, bd=1,
         highlightbackground="#004400", highlightcolor=FG,
         highlightthickness=1, cursor="hand2",
@@ -324,14 +324,16 @@ def mk_btn(parent, text: str, command, state=tk.NORMAL, width=None) -> tk.Button
     )
     if width:
         btn.config(width=width)
-    def _enter(e):
-        if str(btn["state"]) != "disabled":
-            btn.config(bg=FG, fg="#000000", highlightbackground=FG)
-    def _leave(e):
-        if str(btn["state"]) != "disabled":
-            btn.config(bg="#001800", fg=FG, highlightbackground="#004400")
-    btn.bind("<Enter>", _enter)
-    btn.bind("<Leave>", _leave)
+    import sys
+    if sys.platform != 'darwin':
+        def _enter(e):
+            if str(btn["state"]) != "disabled":
+                btn.config(bg="#00CC33", fg="#000000", highlightbackground=FG)
+        def _leave(e):
+            if str(btn["state"]) != "disabled":
+                btn.config(bg=FG, fg="#000000", highlightbackground="#004400")
+        btn.bind("<Enter>", _enter)
+        btn.bind("<Leave>", _leave)
     return btn
 
 
@@ -838,6 +840,7 @@ class ScraperApp:
         self.stop_btn.pack(side=tk.LEFT, padx=4)
 
         mk_btn(frm, "[ 📁  OUTPUT DIR ]", self.open_folder).pack(side=tk.RIGHT)
+        mk_btn(frm, "[ ✉  EMAIL CAMPAIGN MATRIX ]", self._open_campaign_suite).pack(side=tk.RIGHT, padx=8)
 
     # ── 4. Console ────────────────────────────────────────────────────────────
     def _build_console(self):
@@ -995,7 +998,21 @@ class ScraperApp:
         root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
         out_dir  = os.path.join(root_dir, 'output')
         os.makedirs(out_dir, exist_ok=True)
-        os.startfile(out_dir)
+        import sys, subprocess
+        if sys.platform == 'win32':
+            os.startfile(out_dir)
+        elif sys.platform == 'darwin':
+            subprocess.call(['open', out_dir])
+        else:
+            subprocess.call(['xdg-open', out_dir])
+
+    def _open_campaign_suite(self):
+        try:
+            from src.gui.email_sender_gui import main as email_gui_main
+            self.log("✉️ Launching Antigravity Outreach Campaign Engine...", "save")
+            email_gui_main()
+        except Exception as e:
+            self.log(f"⚠️ Failed to launch Email Campaign Engine: {e}", "error")
 
     def _on_close(self):
         if self.rain:
