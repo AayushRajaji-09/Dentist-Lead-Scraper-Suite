@@ -132,3 +132,57 @@ if __name__ == "__main__":
     # Quick self-test
     log_run("Ahmedabad (Test)", 10, 250, "Dentists_Ahmedabad_Complete_Directory.xlsx")
 
+
+# ── Per-City Persistent Deduplication Registry ────────────────────────────────
+
+def _fingerprint_path(city_name: str) -> str:
+    """Returns the path to the per-city fingerprint JSON registry file."""
+    safe_city = city_name.strip().replace(" ", "_")
+    return os.path.join(OUTPUT_DIR, f"seen_leads_{safe_city}.json")
+
+
+def load_seen_fingerprints(city_name: str) -> set:
+    """
+    Loads the persistent set of lead fingerprints for a given city.
+    Fingerprint = hash(phone + clinic_name + google_maps_url)
+    Returns an empty set if no registry exists yet for this city.
+    """
+    path = _fingerprint_path(city_name)
+    if not os.path.exists(path):
+        return set()
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return set(data.get("fingerprints", []))
+    except Exception:
+        return set()
+
+
+def save_seen_fingerprints(city_name: str, fingerprints: set):
+    """
+    Saves the full set of lead fingerprints for a given city to disk.
+    Called at the end of every scraping session.
+    """
+    path = _fingerprint_path(city_name)
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump({"city": city_name, "fingerprints": list(fingerprints)}, f, indent=2)
+    except Exception as e:
+        print(f"⚠️  Could not save fingerprint registry: {e}")
+
+
+def make_lead_fingerprint(phone: str, clinic_name: str, maps_url: str) -> str:
+    """
+    Creates a stable string fingerprint for a lead.
+    Used to detect duplicates across scraping sessions.
+    """
+    raw = f"{phone.strip()}|{clinic_name.strip().lower()}|{maps_url.strip()}"
+    import hashlib
+    return hashlib.md5(raw.encode("utf-8")).hexdigest()
+
+
+def clear_city_fingerprints(city_name: str):
+    """Deletes the fingerprint registry for a given city (Force Re-Scrape)."""
+    path = _fingerprint_path(city_name)
+    if os.path.exists(path):
+        os.remove(path)

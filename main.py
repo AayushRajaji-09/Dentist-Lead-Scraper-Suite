@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-🚀 Antigravity Lead Scraper Suite v3.0 - Master Launcher
-Multi-category Google Maps lead scraper.
-  GUI  : python main.py
-  CLI  : python main.py --cli
+🚀 Antigravity Lead Scraper Suite v3.1 - Master Launcher
+Multi-category Google Maps lead scraper and B2B email outreach campaign engine.
+  GUI         : python main.py
+  CLI Scraper : python main.py --cli
+  Campaign    : python main.py --campaign
 """
 import sys
 import os
@@ -13,7 +14,7 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 def main():
     if "--cli" in sys.argv or "--scraper" in sys.argv:
-        print("🖥️  Launching Headless CLI Scraper Engine (v3.0)...")
+        print("🖥️  Launching Headless CLI Scraper Engine (v3.1)...")
         from src.scraper.free_dentist_scraper import main as scraper_main
         if callable(scraper_main):
             scraper_main()
@@ -23,7 +24,7 @@ def main():
         if callable(emailer_main):
             emailer_main()
     else:
-        print("🚀 Launching Antigravity Lead Scraper Suite v3.0 GUI...")
+        print("🚀 Launching Antigravity Lead Scraper Suite v3.1 GUI...")
         from src.gui.dentist_lead_suite_gui import main as gui_main
         if callable(gui_main):
             gui_main()

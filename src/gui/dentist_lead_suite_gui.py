@@ -1,5 +1,5 @@
 """
-🚀 Antigravity Lead Scraper Suite v3.0 — MATRIX EDITION
+🚀 Antigravity Lead Scraper Suite v3.1 — MATRIX EDITION
 Deep-green terminal aesthetic:
   ▸ Falling Katakana rain animation on header canvas
   ▸ Typewriter boot sequence on startup
@@ -12,26 +12,47 @@ import os
 import re
 import sys
 import random
-import subprocess
 import threading
 import time
 import tkinter as tk
 from tkinter import messagebox, scrolledtext, ttk
 
-import pandas as pd
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
+import requests
 from playwright.sync_api import sync_playwright
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-# ── Logging fallback ──────────────────────────────────────────────────────────
+# ── Shared utilities ─────────────────────────────────────────────────────────
 try:
-    from src.utils.run_logger import log_run
+    from src.utils.helpers import (
+        save_leads_to_file, extract_emails_from_website, parse_lead_name
+    )
 except ImportError:
-    try:
-        from run_logger import log_run
-    except ImportError:
-        def log_run(*args, **kwargs):
-            pass
+    from helpers import (
+        save_leads_to_file, extract_emails_from_website, parse_lead_name
+    )
+
+# ── Logging & dedup helpers ──────────────────────────────────────────────────
+try:
+    from src.utils.run_logger import (
+        log_run, load_seen_fingerprints, save_seen_fingerprints,
+        make_lead_fingerprint, clear_city_fingerprints
+    )
+except ImportError:
+    from run_logger import (
+        log_run, load_seen_fingerprints, save_seen_fingerprints,
+        make_lead_fingerprint, clear_city_fingerprints
+    )
+
+# ── System auto-optimizer ─────────────────────────────────────────────────────
+try:
+    from src.utils.system_optimizer import auto_optimize_system
+except ImportError:
+    from system_optimizer import auto_optimize_system
 
 # ── Category config fallback ──────────────────────────────────────────────────
 try:
@@ -293,9 +314,9 @@ def parse_lead_name(raw_name: str, name_mode: str):
 def mk_btn(parent, text: str, command, state=tk.NORMAL, width=None) -> tk.Button:
     btn = tk.Button(
         parent, text=text, command=command,
-        bg="#001800" if state == tk.NORMAL else "#000800",
-        fg="#000000" if state == tk.NORMAL else "#555555",
-        activebackground=FG, activeforeground="#000000",
+        bg=FG if state == tk.NORMAL else "#000800",
+        fg="#000000" if state == tk.NORMAL else FG_DIM,
+        activebackground="#00CC33", activeforeground="#000000",
         font=("Courier New", 10, "bold"), relief=tk.SOLID, bd=1,
         highlightbackground="#004400", highlightcolor=FG,
         highlightthickness=1, cursor="hand2",
@@ -303,16 +324,42 @@ def mk_btn(parent, text: str, command, state=tk.NORMAL, width=None) -> tk.Button
     )
     if width:
         btn.config(width=width)
+    import sys
     if sys.platform != 'darwin':
         def _enter(e):
             if str(btn["state"]) != "disabled":
-                btn.config(bg=FG, fg="#000000", highlightbackground=FG)
+                btn.config(bg="#00CC33", fg="#000000", highlightbackground=FG)
         def _leave(e):
             if str(btn["state"]) != "disabled":
-                btn.config(bg="#001800", fg="#000000", highlightbackground="#004400")
+                btn.config(bg=FG, fg="#000000", highlightbackground="#004400")
         btn.bind("<Enter>", _enter)
         btn.bind("<Leave>", _leave)
     return btn
+
+
+def mk_option_menu(parent, var: tk.StringVar, options: list, command=None, width=None) -> tk.OptionMenu:
+    opt = tk.OptionMenu(parent, var, *options, command=command)
+    opt.config(
+        bg="#001800", fg=FG, activebackground=FG, activeforeground="#000000",
+        font=("Courier New", 10, "bold"), relief=tk.SOLID, bd=1,
+        highlightbackground="#004400", highlightcolor=FG,
+        highlightthickness=1, cursor="hand2", padx=8, pady=4,
+    )
+    if width:
+        opt.config(width=width)
+    opt["menu"].config(
+        bg="#001800", fg=FG, activebackground=FG, activeforeground="#000000",
+        font=("Courier New", 10, "bold"), bd=1, relief=tk.SOLID,
+    )
+    def _enter(e):
+        if str(opt["state"]) != "disabled":
+            opt.config(bg=FG, fg="#000000", highlightbackground=FG)
+    def _leave(e):
+        if str(opt["state"]) != "disabled":
+            opt.config(bg="#001800", fg=FG, highlightbackground="#004400")
+    opt.bind("<Enter>", _enter)
+    opt.bind("<Leave>", _leave)
+    return opt
 
 
 # =============================================================================
@@ -460,17 +507,11 @@ class CityAreaPickerDialog(tk.Toplevel):
             foreground=[("readonly", FG)],
         )
 
-        self.city_cb = ttk.Combobox(
-            city_frm, values=CITY_NAMES_SORTED, width=34,
-            state="readonly", font=("Courier New", 10),
-            style="Dlg.TCombobox",
-        )
-        if self.result_city in CITY_NAMES_SORTED:
-            self.city_cb.set(self.result_city)
-        else:
-            self.city_cb.current(0)
-        self.city_cb.pack(anchor=tk.W, pady=(4, 0))
-        self.city_cb.bind("<<ComboboxSelected>>", lambda e: self._load(self.city_cb.get()))
+        self.city_var = tk.StringVar(value=self.result_city if self.result_city in CITY_NAMES_SORTED else CITY_NAMES_SORTED[0])
+        mk_option_menu(
+            city_frm, self.city_var, CITY_NAMES_SORTED,
+            command=lambda val: self._load(val), width=32
+        ).pack(anchor=tk.W, pady=(4, 0))
 
         tk.Frame(self, bg=FG_DIM, height=1).pack(fill=tk.X, pady=4)
 
@@ -570,9 +611,9 @@ class CityAreaPickerDialog(tk.Toplevel):
         tk.Checkbutton(
             self._cb_frame, text=f"  ✏ {raw} [CUSTOM]", variable=var,
             bg=BG, fg=AMBER, activebackground=BG, activeforeground=FG_BRIGHT,
-            selectcolor=SEL_CLR, font=MONO, anchor=tk.W, bd=0,
+            selectcolor="#003800", font=("Courier New", 10, "bold"), anchor=tk.W, bd=0,
             cursor="hand2", command=self._upd_count,
-        ).grid(row=idx // 2, column=idx % 2, sticky=tk.W, padx=8, pady=1)
+        ).grid(row=idx // 2, column=idx % 2, sticky=tk.W, padx=10, pady=3)
         self.custom_e.delete(0, tk.END)
         self._upd_count()
         self._canvas.update_idletasks()
@@ -584,7 +625,7 @@ class CityAreaPickerDialog(tk.Toplevel):
         if not sel:
             messagebox.showwarning("> ERROR", "Select at least one area.", parent=self)
             return
-        self.result_city  = self.city_cb.get()
+        self.result_city  = self.city_var.get()
         self.result_areas = sel
         self.confirmed    = True
         self.destroy()
@@ -597,8 +638,13 @@ class ScraperApp:
 
     def __init__(self, root: tk.Tk):
         self.root     = root
-        self.root.title("◈  ANTIGRAVITY LEAD SCRAPER SUITE  v3.0  |  MATRIX EDITION")
-        self.root.geometry("980x760")
+
+        # ── Run system auto-optimizer before anything else ────────────────
+        _sw = root.winfo_screenwidth()
+        self.SYS_CFG = auto_optimize_system(screen_width=_sw)
+
+        self.root.title("◈  ANTIGRAVITY LEAD SCRAPER SUITE  v3.1  |  MATRIX EDITION")
+        self.root.geometry(self.SYS_CFG["window_size"])
         self.root.minsize(820, 620)
         self.root.configure(bg=BG)
 
@@ -698,12 +744,19 @@ class ScraperApp:
             fill=FG_BRIGHT, font=("Courier New", 22, "bold"), tags="banner",
         )
         self.rain_canvas.create_text(
-            cx, 78,
-            text="LEAD  SCRAPER  SUITE   v3.0   |   GOOGLE  MAPS  NEURAL  ENGINE",
+            cx, 75,
+            text="LEAD  SCRAPER  SUITE   v3.1   |   GOOGLE  MAPS  NEURAL  ENGINE",
             fill=FG_DIM, font=("Courier New", 9, "bold"), tags="banner",
         )
+        cfg = self.SYS_CFG
+        spec_str = f"⚡ SYSTEM SPEC : {cfg['os_name'].upper()} ({cfg['cpus']}-CORE CPU)   |   MODE : {cfg['profile_name']} (DEPTH {cfg['scroll_depth']})"
+        self.rain_canvas.create_text(
+            cx, 93,
+            text=spec_str,
+            fill=CYAN_CLR, font=("Courier New", 9, "bold"), tags="banner",
+        )
         # Bottom accent line
-        self.rain_canvas.create_line(cx - 360, 104, cx + 360, 104, fill=FG_DIM, tags="banner")
+        self.rain_canvas.create_line(cx - 360, 108, cx + 360, 108, fill=FG_DIM, tags="banner")
 
     # ── 2. Settings panel ─────────────────────────────────────────────────────
     def _build_settings(self):
@@ -719,10 +772,8 @@ class ScraperApp:
             row=0, column=0, sticky=tk.W, padx=(14, 6), pady=8)
 
         self.category_var = tk.StringVar(value=CATEGORY_NAMES[0])
-        ttk.Combobox(
-            frm, textvariable=self.category_var,
-            values=CATEGORY_NAMES, width=30, state="readonly",
-            style="Matrix.TCombobox",
+        mk_option_menu(
+            frm, self.category_var, CATEGORY_NAMES, width=28
         ).grid(row=0, column=1, sticky=tk.W, padx=6, pady=8)
 
         tk.Label(frm, text="> DEPTH :", bg=BG, fg=FG, font=MONO_B).grid(
@@ -756,7 +807,26 @@ class ScraperApp:
             variable=self.headless_var,
             bg=BG, fg=FG, activebackground=BG, activeforeground=FG_BRIGHT,
             selectcolor="#003800", font=("Courier New", 10, "bold"), anchor=tk.W, bd=0, cursor="hand2",
-        ).grid(row=2, column=0, columnspan=4, sticky=tk.W, padx=14, pady=(2, 10))
+        ).grid(row=2, column=0, columnspan=4, sticky=tk.W, padx=14, pady=(2, 4))
+
+        # Row 3 — Force Re-Scrape (bypass dedup registry)
+        self.force_rescrape_var = tk.BooleanVar(value=False)
+        tk.Checkbutton(
+            frm,
+            text="  > FORCE RE-SCRAPE  (ignore previous session data — collect all leads fresh)",
+            variable=self.force_rescrape_var,
+            bg=BG, fg=AMBER, activebackground=BG, activeforeground=FG_BRIGHT,
+            selectcolor="#003800", font=("Courier New", 10, "bold"), anchor=tk.W, bd=0, cursor="hand2",
+        ).grid(row=3, column=0, columnspan=4, sticky=tk.W, padx=14, pady=(2, 4))
+
+        # Row 4 — Persistent System Profile Badge
+        cfg = self.SYS_CFG
+        spec_txt = f"⚡ HARDWARE PROFILE : {cfg['os_name']} ({cfg['cpus']}-Core CPU)   |   MODE : {cfg['profile_name']}   |   AUTO-DEPTH : {cfg['scroll_depth']}   |   TIMEOUT : {cfg['http_timeout']}s"
+        tk.Label(
+            frm, text=spec_txt,
+            bg="#001800", fg=CYAN_CLR, font=("Courier New", 9, "bold"),
+            anchor=tk.W, relief=tk.SOLID, bd=1, highlightbackground=BORDER,
+        ).grid(row=4, column=0, columnspan=4, sticky=tk.EW, padx=14, pady=(2, 8))
 
     # ── 3. Action buttons ─────────────────────────────────────────────────────
     def _build_action_bar(self):
@@ -769,9 +839,8 @@ class ScraperApp:
         self.stop_btn = mk_btn(frm, "[ ⏹  ABORT MISSION ]", self.stop_scraper, state=tk.DISABLED)
         self.stop_btn.pack(side=tk.LEFT, padx=4)
 
-        mk_btn(frm, "[ ✉️  EMAIL CAMPAIGN MATRIX ]", self.open_emailer).pack(side=tk.LEFT, padx=(16, 4))
-
         mk_btn(frm, "[ 📁  OUTPUT DIR ]", self.open_folder).pack(side=tk.RIGHT)
+        mk_btn(frm, "[ ✉  EMAIL CAMPAIGN MATRIX ]", self._open_campaign_suite).pack(side=tk.RIGHT, padx=8)
 
     # ── 4. Console ────────────────────────────────────────────────────────────
     def _build_console(self):
@@ -806,9 +875,11 @@ class ScraperApp:
         bar = tk.Frame(self.root, bg="#001800", pady=5)
         bar.pack(fill=tk.X, side=tk.BOTTOM)
 
+        cfg = self.SYS_CFG
         tk.Label(bar, text=" ◈ ", bg="#001800", fg=FG, font=MONO_B).pack(side=tk.LEFT)
 
-        self.lbl_sys = tk.Label(bar, text="SYS: ONLINE", bg="#001800", fg=FG_BRIGHT, font=MONO_B)
+        sys_label_txt = f"SYS: {cfg['profile_name']} MODE ({cfg['cpus']}-CORE)"
+        self.lbl_sys = tk.Label(bar, text=sys_label_txt, bg="#001800", fg=CYAN_CLR, font=MONO_B)
         self.lbl_sys.pack(side=tk.LEFT, padx=6)
         self._sep(bar)
 
@@ -823,7 +894,7 @@ class ScraperApp:
         self.lbl_clock = tk.Label(bar, text="", bg="#001800", fg=FG_BRIGHT, font=MONO_B)
         self.lbl_clock.pack(side=tk.RIGHT, padx=8)
         self._sep(bar, side=tk.RIGHT)
-        tk.Label(bar, text="ANTIGRAVITY ENGINE v3.0 ", bg="#001800", fg=FG, font=MONO_B).pack(side=tk.RIGHT)
+        tk.Label(bar, text="ANTIGRAVITY ENGINE v3.1 ", bg="#001800", fg=FG, font=MONO_B).pack(side=tk.RIGHT)
 
     def _sep(self, parent, side=tk.LEFT):
         tk.Label(parent, text="|", bg="#001800", fg="#005511", font=MONO_B).pack(side=side, padx=3)
@@ -860,7 +931,7 @@ class ScraperApp:
 
     # ── Boot sequence ─────────────────────────────────────────────────────────
     def _boot_sequence(self):
-        # Check if discord webhook is configured
+        cfg = self.SYS_CFG
         discord_status = "[ OPTIONAL : ADD WEBHOOK IN config.json ]"
         try:
             from src.utils.run_logger import get_discord_webhook_url
@@ -880,11 +951,18 @@ class ScraperApp:
             (f"> TEAM TELEMETRY ........... {discord_status}", "save" if "ACTIVE" in discord_status else "dim"),
             ("> GOOGLE MAPS GRID ......... [ CONNECTED ]", "success"),
             ("──────────────────────────────────────────────────────────", "dim"),
+            (f"> SYSTEM PROFILED .......... [ {cfg['os_name']} | {cfg['cpus']}-CORE CPU | {cfg['profile_name']} MODE ]", "save"),
+            (f"> PERFORMANCE PROFILE ...... [ SCROLL DEPTH: {cfg['scroll_depth']} | TIMEOUT: {cfg['http_timeout']}s ]", "save"),
+            ("> SMART DEDUP ENGINE ....... [ PER-CITY FINGERPRINT REGISTRY ACTIVE ]", "save"),
+            ("──────────────────────────────────────────────────────────", "dim"),
             (">  SYSTEM  ONLINE.   AWAITING  OPERATOR  INPUT.", "bright"),
             ("", "success"),
         ]
         for i, (text, tag) in enumerate(lines):
             self.root.after(i * 160, lambda t=text, tg=tag: self.log(t, tg))
+
+        # Auto-set scroll depth based on system profile
+        self.scroll_var.set(cfg["scroll_depth"])
 
     # ── Button handlers ───────────────────────────────────────────────────────
     def open_city_dialog(self):
@@ -920,27 +998,21 @@ class ScraperApp:
         root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
         out_dir  = os.path.join(root_dir, 'output')
         os.makedirs(out_dir, exist_ok=True)
-        try:
-            if sys.platform == 'darwin':       # macOS
-                subprocess.call(['open', out_dir])
-            elif sys.platform == 'win32':      # Windows
-                os.startfile(out_dir)
-            else:                              # Linux
-                subprocess.call(['xdg-open', out_dir])
-        except Exception as e:
-            self.log(f"> Could not open output folder: {e}", "warning")
+        import sys, subprocess
+        if sys.platform == 'win32':
+            os.startfile(out_dir)
+        elif sys.platform == 'darwin':
+            subprocess.call(['open', out_dir])
+        else:
+            subprocess.call(['xdg-open', out_dir])
 
-    def open_emailer(self):
+    def _open_campaign_suite(self):
         try:
-            from src.gui.email_sender_gui import EmailSenderApp
-        except ImportError:
-            try:
-                from email_sender_gui import EmailSenderApp
-            except ImportError as e:
-                messagebox.showerror("Error", f"Could not import EmailSenderApp:\n{e}")
-                return
-        self.log("> LAUNCHING PRO OUTREACH CAMPAIGN ENGINE...", "bright")
-        EmailSenderApp(self.root)
+            from src.gui.email_sender_gui import main as email_gui_main
+            self.log("✉️ Launching Antigravity Outreach Campaign Engine...", "save")
+            email_gui_main()
+        except Exception as e:
+            self.log(f"⚠️ Failed to launch Email Campaign Engine: {e}", "error")
 
     def _on_close(self):
         if self.rain:
@@ -978,14 +1050,18 @@ class ScraperApp:
         seen_urls:    set   = set()
         seen_phones:  set   = set()
 
+        # ── Persistent dedup fingerprint registry ─────────────────────────────
+        force_rescrape = self.force_rescrape_var.get()
+        if force_rescrape:
+            clear_city_fingerprints(city)
+            self.log("> FORCE RE-SCRAPE ENABLED — dedup registry cleared for this city.", "warning")
+        seen_fingerprints = load_seen_fingerprints(city)
+        self.log(f"> DEDUP REGISTRY LOADED — {len(seen_fingerprints)} previously seen leads for {city}.", "dim")
+
         try:
             with sync_playwright() as p:
                 browser = p.chromium.launch(headless=headless)
-                context = browser.new_context(user_agent=(
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                    "AppleWebKit/537.36 (KHTML, like Gecko) "
-                    "Chrome/120.0.0.0 Safari/537.36"
-                ))
+                context = browser.new_context(user_agent=self.SYS_CFG["user_agent"])
                 page = context.new_page()
 
                 for ai, area in enumerate(areas, 1):
@@ -1060,8 +1136,16 @@ class ScraperApp:
 
                             we_el   = page.locator('a[data-item-id="authority"]').first
                             website = we_el.get_attribute("href") if we_el.count() > 0 else "No Website"
+                            email_address = extract_emails_from_website(website)
 
                             first_name, surname = parse_lead_name(raw_name, name_mode)
+
+                            # ── Persistent dedup fingerprint check ────────────────────
+                            fp = make_lead_fingerprint(phone, raw_name, clean_url)
+                            if fp in seen_fingerprints:
+                                self.log(f"  ⏩  SKIP (known) — {(raw_name or 'Unknown')[:24]}", "dim")
+                                continue
+                            seen_fingerprints.add(fp)
 
                             results.append({
                                 "City": city, "Area": area, "Category": cat_key,
@@ -1072,16 +1156,18 @@ class ScraperApp:
                                 "Rating": f"{rating} ★" if rating != "N/A" else "No Rating",
                                 "Total Reviews": reviews,
                                 "Website URL": website if website else "No Website",
+                                "Email Address": email_address,
                                 "Running Ads?": is_sponsored,
                                 "Google Maps Link": clean_url,
                             })
 
-                            fn_disp = (first_name or raw_name)[:16]
-                            sn_disp = surname[:12]
-                            ph_disp = (phone or "N/A")[:15]
+                            fn_disp = (first_name or raw_name)[:14]
+                            sn_disp = surname[:10]
+                            ph_disp = (phone or "N/A")[:13]
+                            em_disp = email_address[:18]
                             self.log(
-                                f"  ✅  [{len(results):>4}]  {fn_disp:<16} {sn_disp:<12}  "
-                                f"📱 {ph_disp:<15}  ⭐ {rating}  📢 {is_sponsored}",
+                                f"  ✅  [{len(results):>4}]  {fn_disp:<14} {sn_disp:<10}  "
+                                f"📱 {ph_disp:<13}  📧 {em_disp:<18}  ⭐ {rating}  📢 {is_sponsored}",
                                 "success"
                             )
                             self.root.after(0, lambda n=len(results): self._set_status(leads=n))
@@ -1090,8 +1176,9 @@ class ScraperApp:
                             continue
 
                     if results:
-                        pd.DataFrame(results).to_excel(output_file, index=False)
-                        self.log(f"  💾  CHECKPOINT → {len(results)} LEADS SAVED TO DISK", "save")
+                        save_leads_to_file(results, output_file)
+                        save_seen_fingerprints(city, seen_fingerprints)
+                        self.log(f"  💾  CHECKPOINT → {len(results)} LEADS SAVED TO DISK | DEDUP REGISTRY UPDATED", "save")
 
                 browser.close()
 

@@ -1,4 +1,4 @@
-# 🚀 Antigravity Lead Scraper Suite v3.0 — Official User Manual
+# 🚀 Antigravity Lead Scraper Suite v3.1 — Official User Manual
 
 Welcome to the **Matrix Edition** of the Antigravity Lead Scraper Suite! This tool automatically discovers businesses across **30 major Indian cities × 20 commercial areas each**, extracts deep Google Maps profiles, and exports them to Excel — all through a stunning dark terminal UI.
 
@@ -17,7 +17,7 @@ playwright install chromium
 ```powershell
 python main.py
 ```
-A full-screen dark terminal window titled **◈ ANTIGRAVITY LEAD SCRAPER SUITE v3.0 | MATRIX EDITION** will open, complete with falling green characters and a boot sequence.
+A full-screen dark terminal window titled **◈ ANTIGRAVITY LEAD SCRAPER SUITE v3.1 | MATRIX EDITION** will open, complete with falling green characters and a boot sequence.
 
 ### Step 3 — Choose Category
 In the **⚙ SCRAPER SETTINGS** panel, select your target business type from the **CATEGORY** dropdown:

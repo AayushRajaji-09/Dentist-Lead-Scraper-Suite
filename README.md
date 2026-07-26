@@ -1,6 +1,6 @@
-# 🚀 Antigravity Lead Scraper Suite v3.0 — Matrix Edition
+# 🚀 Antigravity Lead Scraper Suite v3.1 — Matrix Edition
 
-A multi-category, automated B2B lead generation and profiling suite covering **30 major Indian cities × 20 commercial areas each**. Features a stunning **Matrix-aesthetic GUI** with falling Katakana rain, real-time color-coded console, and an interactive City & Area picker dialog.
+A multi-category, automated B2B lead generation and profiling suite covering **30 major Indian cities × 20 commercial areas each**. Features a stunning **Matrix-aesthetic GUI** with falling Katakana rain, real-time color-coded console, OS-adaptive system optimization, persistent per-city deduplication, and a **built-in 4-tab Email Outreach Campaign Suite**.
 
 Supports 4 business categories: **Dentists · Real Estate Agents · Salons · CA / Accountants**
 
@@ -10,18 +10,24 @@ Supports 4 business categories: **Dentists · Real Estate Agents · Salons · CA
 
 ```
 Dentist-Lead-Scraper-Suite/
-  ├── main.py                              ← Master launcher (GUI or CLI)
+  ├── main.py                              ← Master launcher (GUI, CLI, or Campaign)
   ├── src/
   │    ├── gui/
-  │    │    └── dentist_lead_suite_gui.py  ← Matrix UI (Tkinter) — main interface
+  │    │    ├── dentist_lead_suite_gui.py  ← Matrix Scraper UI (Tkinter) — main interface
+  │    │    └── email_sender_gui.py        ← Matrix Email Campaign UI (Tkinter) — outreach interface
+  │    ├── emailer/
+  │    │    ├── campaign_engine.py         ← SMTP email dispatch, MIME builder & rate limiter
+  │    │    └── campaign_storage.py        ← Lead validation, deduplication & analytics storage
   │    ├── scraper/
-  │    │    ├── categories.py             ← [NEW v3.0] Category config (4 categories)
+  │    │    ├── categories.py             ← Category config (4 categories)
   │    │    └── free_dentist_scraper.py   ← Headless CLI scraper engine
   │    └── utils/
-  │         └── run_logger.py             ← Git telemetry & metrics logger
+  │         ├── helpers.py                ← [NEW v3.1] Shared utilities (Excel save, email regex, name parser)
+  │         ├── system_optimizer.py       ← [NEW v3.1] OS/CPU auto-tuning & profile engine
+  │         └── run_logger.py             ← Git telemetry, metrics logger & dedup registry
   ├── docs/
   │    └── HOW_TO_USE.md                  ← Full user manual
-  ├── output/                             ← Exported .xlsx lead files go here
+  ├── output/                             ← Exported .xlsx lead files & dedup registries go here
   ├── requirements.txt
   └── README.md
 ```
@@ -35,28 +41,33 @@ Dentist-Lead-Scraper-Suite/
 pip install -r requirements.txt
 playwright install chromium
 
-# 2. Launch the Matrix GUI
+# 2. Launch the Matrix Scraper GUI (v3.1)
 python main.py
 
-# 3. Or run the headless CLI scraper
+# 3. Launch the Matrix Email Campaign Suite (v2.0)
+python main.py --campaign
+
+# 4. Or run the headless CLI scraper
 python main.py --cli
 ```
 
 ---
 
-## ✨ v3.0 — What's New
+## ✨ What's New
 
 | Feature | Details |
 |---|---|
-| 🏙️ **30 Cities × 20 Areas** | Expanded from 10 cities to full 30-city India coverage |
-| 📍 **City & Area Picker Dialog** | Click to open — dropdown + checkboxes + custom area entry |
-| 🗂️ **4 Scraping Categories** | Dentists, Real Estate Agents, Salons, CA/Accountants |
-| 🌧️ **Matrix Rain UI** | Falling Katakana animation on the header canvas |
-| 🎨 **Full Dark Theme** | Black `#000000` bg, Matrix green `#00FF41` throughout |
-| 🖥️ **Color-coded Console** | 6 log tags: success / bright / warning / error / save / dim |
-| 📊 **Live Status Bar** | SYS · LEADS · AREA · CLOCK — all live updated |
-| ✏️ **Custom Area Entry** | Add any area not in the preset list from the picker dialog |
-| 📡 **Discord Team Telemetry** | Optional `config.json` integration to send rich embed run summaries to Discord |
+| ✉️ **Matrix Email Campaign Suite** | Built-in 4-tab outreach GUI with email validation, deduplication, personalization scoring & anti-spam SMTP engine |
+| 🍏 **macOS & OS Compatibility** | High-contrast UI rendering, cross-platform file opening, and zero-drop button click protection on macOS Aqua |
+| 🧠 **System Auto-Optimizer** | Probes host OS (Windows/macOS/Linux), CPU cores & screen size; auto-activates TURBO/BALANCED/ECO mode |
+| 🔁 **Smart Deduplication** | Persistent MD5 lead fingerprinting per city (`seen_leads_<City>.json`) — prevents duplicate leads across separate runs |
+| 🎛️ **Force Re-Scrape Option** | Toggle checkbox in GUI settings panel to clear deduplication registry for clean re-scraping |
+| 🏙️ **30 Cities × 20 Areas** | Expanded 30-city India coverage (600 commercial hubs pre-configured) |
+| 📍 **City & Area Picker** | Dropdown + multi-select checkboxes + custom area add button |
+| 🗂️ **4 Business Categories** | Dentists, Real Estate Agents, Salons, CA / Accountants |
+| 🌧️ **Matrix Rain UI** | Animated falling Katakana header banner |
+| 🎨 **Full Dark Theme** | Black `#000000` background with high-contrast Matrix green `#00FF41` |
+| 📡 **Discord Team Telemetry** | Optional Discord webhook integration for live mission completion alerts |
 
 ---
 

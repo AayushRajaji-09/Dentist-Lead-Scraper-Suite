@@ -1,5 +1,5 @@
 """
-categories.py — Central category configuration for Antigravity Lead Scraper Suite v3.0
+categories.py — Central category configuration for Antigravity Lead Scraper Suite v3.1
 
 Add new categories here; they will automatically appear in the GUI dropdown.
 name_mode values:
